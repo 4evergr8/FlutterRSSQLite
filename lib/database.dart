@@ -1,9 +1,10 @@
-
+import 'dart:io';
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
-import 'package:sqlite3/wasm.dart';
-import 'package:drift/wasm.dart';
-
+// 声明生成的文件名（运行 build_runner 后自动生成）
 part 'database.g.dart';
 
 // 1. 设置表
@@ -56,17 +57,10 @@ class AppDatabase extends _$AppDatabase {
 }
 
 // 5. 物理存储连接配置（Android 端）
-
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-
-    // 1. 先通过网络或本地加载 sqlite3 的 WebAssembly 核心字节码
-    final sqlite3 = await WasmSqlite3.loadFromUrl(
-      Uri.parse('sqlite3.wasm'),
-    );
-
-    // 2. 将加载好的 sqlite3 核心对象作为位置参数传入，即可成功调用 inMemory()
-    return WasmDatabase.inMemory(sqlite3);
-
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'database.sqlite'));
+    return NativeDatabase.createInBackground(file);
   });
 }
