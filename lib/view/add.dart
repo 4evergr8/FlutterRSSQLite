@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:drift/drift.dart' as drift;
+import 'package:file_picker/file_picker.dart'; // 新增：用于选择本地 OPML 文件
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:html/dom.dart' as dom; // 新增：用于遍历节点
+import 'package:html/parser.dart' as html_parser; // 新增：用于解析 XML 结构
 import 'package:rss/database.dart';
 import 'package:rss/service/download.dart';
 import 'package:rss/service/rss.dart';
@@ -74,6 +80,106 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
     }
   }
 
+  // 新增：点击“导入 OPML 文件”触发的函数
+  Future<void> _importOpmlFile() async {
+    try {
+      // 1. 让用户选择本地文件
+      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['opml', 'xml']);
+
+      if (result == null || result.files.single.path == null) {
+        return; // 用户取消了选择
+      }
+
+      final cancelLoading = await showLoadingDialogGlobal();
+      int importCount = 0;
+
+      try {
+        // 2. 读取文件文本内容
+        final file = File(result.files.single.path!);
+        final xmlText = await file.readAsString(encoding: utf8);
+
+        // 3. 解析 XML 大纲树
+        final document = html_parser.parse(xmlText);
+        final bodyText = document.querySelector('body');
+        if (bodyText == null) {
+          throw Exception('未找到有效的 OPML body 节点');
+        }
+
+        // 4. 递归遍历所有 outline 节点
+        final List<FeedsCompanion> feedsToInsert = [];
+        _parseOutlineNodes(bodyText.children, '', feedsToInsert);
+
+        if (feedsToInsert.isEmpty) {
+          throw Exception('未在文件中找到任何可导入的订阅源');
+        }
+
+        // 5. 利用 Drift 的 batch 工具单事务批量写入数据库（高效、不卡顿）
+        await _db.batch((batch) {
+          for (final feed in feedsToInsert) {
+            batch.insert(
+              _db.feeds,
+              feed,
+              mode: drift.InsertMode.insertOrReplace, // 冲突时覆盖更新
+            );
+          }
+        });
+
+        importCount = feedsToInsert.length;
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('成功导入 $importCount 个订阅源！')));
+          Navigator.of(context).pop(); // 导入成功后关闭页面
+        }
+      } catch (error) {
+        showErrorSnackBarGlobal('解析或导入失败: $error');
+      } finally {
+        cancelLoading();
+      }
+    } catch (e) {
+      showErrorSnackBarGlobal('选择文件失败: $e');
+    }
+  }
+
+  // 新增：递归解析大纲节点的辅助函数
+  void _parseOutlineNodes(List<dom.Element> elements, String currentCategory, List<FeedsCompanion> resultList) {
+    for (final element in elements) {
+      if (element.localName == 'outline') {
+        final xmlUrl = element.attributes['xmlUrl']?.trim();
+        final textAttr = element.attributes['text']?.trim();
+        final titleAttr = element.attributes['title']?.trim();
+        final htmlUrl = element.attributes['htmlUrl']?.trim() ?? '';
+
+        final String displayName = (textAttr != null && textAttr.isNotEmpty) ? textAttr : (titleAttr ?? '未命名订阅源');
+
+        if (xmlUrl != null && xmlUrl.isNotEmpty) {
+          // 叶子节点：这是一个具体的订阅源
+          resultList.add(
+            FeedsCompanion(
+              feedUrl: drift.Value(xmlUrl),
+              siteUrl: drift.Value(htmlUrl),
+              title: drift.Value(displayName),
+              category: drift.Value(currentCategory),
+              // 继承父级目录的分组名
+              iconUrl: const drift.Value(''),
+              lastUpdated: const drift.Value('0'),
+              displayMode: drift.Value(_selectedDisplayMode), // 继承当前选择的显示模式
+            ),
+          );
+        } else {
+          // 分类节点：没有链接，说明它是一个文件夹。向下递归，并将当前节点的名称作为子节点的分组名
+          if (element.children.isNotEmpty) {
+            _parseOutlineNodes(element.children, displayName, resultList);
+          }
+        }
+      } else {
+        // 如果遇到了其它中间层级节点，继续向下探查
+        if (element.children.isNotEmpty) {
+          _parseOutlineNodes(element.children, currentCategory, resultList);
+        }
+      }
+    }
+  }
+
   // 点击最下方“保存”按钮触发的函数
   Future<void> _saveToDatabase() async {
     final cancelLoading = await showLoadingDialogGlobal();
@@ -83,16 +189,16 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
       await _db
           .into(_db.feeds)
           .insertOnConflictUpdate(
-        FeedsCompanion(
-          feedUrl: drift.Value(_urlController.text.trim()),
-          siteUrl: drift.Value(_siteUrlController.text.trim()),
-          title: drift.Value(_titleController.text.trim()),
-          category: drift.Value(_categoryController.text.trim()),
-          iconUrl: drift.Value(_iconUrlController.text.trim()),
-          lastUpdated: const drift.Value('0'),
-          displayMode: drift.Value(_selectedDisplayMode), // 使用下拉选框的选择值
-        ),
-      );
+            FeedsCompanion(
+              feedUrl: drift.Value(_urlController.text.trim()),
+              siteUrl: drift.Value(_siteUrlController.text.trim()),
+              title: drift.Value(_titleController.text.trim()),
+              category: drift.Value(_categoryController.text.trim()),
+              iconUrl: drift.Value(_iconUrlController.text.trim()),
+              lastUpdated: const drift.Value('0'),
+              displayMode: drift.Value(_selectedDisplayMode), // 使用下拉选框的选择值
+            ),
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('订阅保存成功！')));
@@ -145,6 +251,14 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
 
             // 解析动作按钮
             FilledButton(onPressed: _fetchAndParseFeed, child: const Text('解析订阅源')),
+            const SizedBox(height: 12),
+
+            // 新增：导入 OPML 按钮
+            OutlinedButton.icon(
+              onPressed: _importOpmlFile,
+              icon: const Icon(Icons.file_open),
+              label: const Text('导入 OPML 文件'),
+            ),
 
             // 第二部分：解析成功后，展开的可编辑输入框
             if (_hasLoaded) ...[
@@ -180,7 +294,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 新增：显示方式下拉选框
+              // 显示方式下拉选框
               DropdownButtonFormField<String>(
                 value: _selectedDisplayMode,
                 decoration: const InputDecoration(labelText: '显示方式', border: OutlineInputBorder()),
