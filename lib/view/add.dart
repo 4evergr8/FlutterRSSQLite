@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart'; // 新增：用于选择本地 OPML 文件
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:html/dom.dart' as dom; // 新增：用于遍历节点
-import 'package:html/parser.dart' as html_parser; // 新增：用于解析 XML 结构
 import 'package:rss/database.dart';
 import 'package:rss/service/download.dart';
 import 'package:rss/service/rss.dart';
@@ -147,9 +144,10 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
   }
 
   // 修改后：配合 xml 库进行递归解析的辅助函数
+  // 修改后：改用 childElements 规避 xml 库命名空间节点的底层 bug
   void _parseOutlineNodes(Iterable<xml.XmlNode> nodes, String currentCategory, List<FeedsCompanion> resultList) {
     for (final node in nodes) {
-      // 过滤掉空白文本换行节点，只处理标准的元素标签
+      // 确保只有标准的 XmlElement 才进入处理逻辑
       if (node is xml.XmlElement && node.name.local == 'outline') {
         final xmlUrl = node.getAttribute('xmlUrl')?.trim();
         final textAttr = node.getAttribute('text')?.trim();
@@ -174,15 +172,14 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
             ),
           );
         } else {
-          // 分类节点：向下递归，并将当前节点的名称作为子节点的分组名
-          if (node.children.isNotEmpty) {
-            _parseOutlineNodes(node.children, displayName, resultList);
+          // 分类节点：使用 childElements 安全地向下递归子元素
+          if (node.childElements.isNotEmpty) {
+            _parseOutlineNodes(node.childElements, displayName, resultList);
           }
         }
       }
     }
-  }
-  // 点击最下方“保存”按钮触发的函数
+  }// 点击最下方“保存”按钮触发的函数
   Future<void> _saveToDatabase() async {
     final cancelLoading = await showLoadingDialogGlobal();
 
