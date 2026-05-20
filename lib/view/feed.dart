@@ -184,7 +184,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
               child: Text(
                 '没有匹配的订阅源\n下拉可以触发同步刷新',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, height: 1.5),
+                style: TextStyle(color: Colors.grey, height: 1.5, fontSize: 14),
               ),
             ),
           ),
@@ -195,7 +195,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
     return RefreshIndicator(
       onRefresh: _refreshAllFeeds,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         itemCount: _groupedFeeds.keys.length,
         itemBuilder: (context, groupIndex) {
           final categoryName = _groupedFeeds.keys.elementAt(groupIndex);
@@ -203,28 +203,34 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
 
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
-            elevation: 1,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant.withAlpha(80),
+                width: 1,
+              ),
+            ),
             clipBehavior: Clip.antiAlias,
             child: ExpansionTile(
               shape: const Border(),
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
               collapsedBackgroundColor: Theme.of(context).colorScheme.surface,
               title: Text(
                 categoryName,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, letterSpacing: 0.3),
               ),
               trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${feedsInGroup.length}',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -234,22 +240,18 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
                 final count = _unreadCounts[feed.feedUrl] ?? 0;
 
                 return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  shape: const Border(),
                   leading: Container(
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(20),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant.withAlpha(120),
+                        width: 1,
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
@@ -258,32 +260,44 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
                         imageUrl: feed.iconUrl,
                         fit: BoxFit.contain,
                         placeholder: (context, url) => const Padding(
-                          padding: EdgeInsets.all(4.0),
-                          child: CircularProgressIndicator(strokeWidth: 1.5),
+                          padding: EdgeInsets.all(6.0),
+                          child: CircularProgressIndicator(strokeWidth: 1.2),
                         ),
-                        errorWidget: (context, url, error) => Icon(Icons.rss_feed, size: 18, color: Theme.of(context).colorScheme.primary),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.rss_feed,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                        ),
                       )
-                          : Icon(Icons.rss_feed, size: 18, color: Theme.of(context).colorScheme.primary),
+                          : Icon(
+                        Icons.rss_feed,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.primary.withAlpha(180),
+                      ),
                     ),
                   ),
                   title: Text(
                     feed.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: count > 0 ? Theme.of(context).colorScheme.primaryContainer : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
+                      color: count > 0
+                          ? Theme.of(context).colorScheme.primaryContainer.withAlpha(200)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       '$count',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: count > 0 ? Theme.of(context).colorScheme.onPrimaryContainer : Colors.grey.shade400,
+                        fontWeight: FontWeight.w600,
+                        color: count > 0
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(100),
                       ),
                     ),
                   ),
