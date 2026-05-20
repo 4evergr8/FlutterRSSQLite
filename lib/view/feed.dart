@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:collection/collection.dart'; // 用于分组函数 groupListsBy
 import 'package:rss/database.dart';
 import 'package:rss/service/download.dart';
 import 'package:rss/service/rss.dart';
+import 'package:rss/view/artical.dart';
 import 'package:rss/widget.dart';
 
 
@@ -205,8 +205,15 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
                     ),
                   ),
                 ),
-                onTap: () {
-                  // 点击进入文章列表页逻辑（下一段编写）
+                onTap: () async {
+                  // 跳转到文章列表页，并将当前点击的订阅源完整数据（feed）传递过去
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ArticleListScreen(feed: feed),
+                    ),
+                  );
+                  // 从文章列表页返回后（可能在里面消耗了未读数或切换了状态），重新刷新当前订阅页的本地数据
+                  _loadDatabaseData();
                 },
               );
             }).toList(),
