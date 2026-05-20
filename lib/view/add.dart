@@ -44,7 +44,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
     }
   }
 
-  // 点击“解析订阅源”按钮触发 the 函数
+// 点击“解析订阅源”按钮触发的函数
   Future<void> _fetchAndParseFeed() async {
     final inputUrl = _urlController.text.trim();
     if (inputUrl.isEmpty) {
@@ -52,32 +52,26 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
       return;
     }
 
-    // 1. 在 try 开始前打开加载动画，并拿到关闭动画的回调函数
     final cancelLoading = await showLoadingDialogGlobal();
 
     try {
-      // 2. 调用纯函数下载
       final xmlText = await downloadXmlFromServer(inputUrl);
 
-      // 3. 调用纯函数解析
-      final metadata = parseRssXmlMetadata(xmlText);
+      // 修改后：调用合并后的平铺函数，直接读取对应的 Key
+      final parsedData = parseRss(xmlText);
 
-      // 4. 将解析出的内容塞进对应的文本控制器中，并展现下方的修改输入框
       setState(() {
-        _titleController.text = metadata['title'] ?? '';
-        _siteUrlController.text = metadata['siteUrl'] ?? '';
-        _iconUrlController.text = metadata['iconUrl'] ?? '';
+        _titleController.text = parsedData['title'] ?? '';
+        _siteUrlController.text = parsedData['siteUrl'] ?? '';
+        _iconUrlController.text = parsedData['iconUrl'] ?? '';
         _hasLoaded = true;
       });
     } catch (error) {
-      // 5. 错误分支：使用你现有的全局组件弹窗报错
       showErrorSnackBarGlobal(error.toString());
     } finally {
-      // 6. final 分支：雷打不动地关闭动画
       cancelLoading();
     }
   }
-
 
 // 修改后：使用标准 xml 库以及新版 file_picker 调用的导入函数
   Future<void> _importOpmlFile() async {
