@@ -35,6 +35,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
   }
 
   // 从数据库普通读取数据并刷到 UI
+// 从数据库普通读取数据并刷到 UI
   Future<void> _loadDatabaseData() async {
     try {
       // 1. 查出全部订阅源
@@ -62,11 +63,36 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
         filteredFeeds.add(feed);
       }
 
-      // 3. 将扁平的订阅源列表按照 category（分组名）进行归类归集
-      final grouped = filteredFeeds.groupListsBy((feed) => feed.category);
+      // 3. 将扁平的订阅源列表按照规则归类并严格排序
+      // 先用普通 groupListsBy 归类，把空字符串或者 null 的分类统一规范命名为 "未分组"
+      final rawGrouped = filteredFeeds.groupListsBy((feed) {
+        final category = feed.category.trim();
+        return category.isEmpty ? '未分组' : category;
+      });
+
+      // 提取出除“未分组”以外的所有分类名称，并进行从小到大（升序）排序
+      final otherCategoryNames = rawGrouped.keys.where((k) => k != '未分组').toList()..sort();
+
+      // 重新构建一个严格有序的新 Map
+      final Map<String, List<Feed>> sortedGrouped = {};
+
+      // 规则：如果存在“未分组”项目，强制将其塞入最顶部，不参与排序
+      if (rawGrouped.containsKey('未分组')) {
+        final unclassifiedFeeds = rawGrouped['未分组']!;
+        // 对“未分组”内部的 feed 按照 title 从小到大排序
+        unclassifiedFeeds.sort((a, b) => a.title.compareTo(b.title));
+        sortedGrouped['未分组'] = unclassifiedFeeds;
+      }
+
+      // 依次将排序后的其他分组塞入 Map，塞入前对组内的 feed 按照 title 从小到大排序
+      for (var categoryName in otherCategoryNames) {
+        final feedsInGroup = rawGrouped[categoryName]!;
+        feedsInGroup.sort((a, b) => a.title.compareTo(b.title));
+        sortedGrouped[categoryName] = feedsInGroup;
+      }
 
       setState(() {
-        _groupedFeeds = grouped;
+        _groupedFeeds = sortedGrouped;
         _unreadCounts = counts;
         _isLoadingData = false;
       });
