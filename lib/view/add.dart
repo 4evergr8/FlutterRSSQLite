@@ -4,13 +4,15 @@ import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:rss/database.dart';
 import 'package:rss/service/download.dart';
 import 'package:rss/service/rss.dart';
 import 'package:rss/widget.dart';
 import 'package:xml/xml.dart' as xml;
 
-final _db = AppDatabase();
+var _db = AppDatabase();
 
 class AddFeedScreen extends StatefulWidget {
   const AddFeedScreen({super.key});
@@ -155,6 +157,63 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
     }
   }
 
+  Future<void> _importSqliteFile() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.any,
+      );
+
+      if (result == null || result.files.single.path == null) {
+        return;
+      }
+
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('确认覆盖数据库'),
+          content: const Text('导入外部数据库将完全覆盖并替换当前的所有订阅数据，此操作不可逆。是否继续？'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('确认覆盖', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+
+      final cancelLoading = await showLoadingDialogGlobal();
+
+      try {
+        final selectedFile = File(result.files.single.path!);
+        final dbDir = await getApplicationDocumentsDirectory();
+        final targetPath = p.join(dbDir.path, 'app_database.sqlite');
+
+        await _db.close();
+
+        await selectedFile.copy(targetPath);
+
+        _db = AppDatabase();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('数据库覆盖导入成功！')));
+          Navigator.of(context).pop();
+        }
+      } catch (error) {
+        showErrorSnackBarGlobal('导入数据库失败: $error');
+      } finally {
+        cancelLoading();
+      }
+    } catch (e) {
+      showErrorSnackBarGlobal('选择文件失败: $e');
+    }
+  }
+
   Future<void> _saveToDatabase() async {
     final cancelLoading = await showLoadingDialogGlobal();
 
@@ -198,7 +257,6 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // 统一的输入框装饰风格
     InputDecoration customInputDecoration(String labelText, IconData prefixIcon) {
       return InputDecoration(
         labelText: labelText,
@@ -230,7 +288,6 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 第一部分：输入链接卡片
             Card(
               margin: const EdgeInsets.symmetric(vertical: 6),
               elevation: 1,
@@ -287,12 +344,23 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
                       icon: const Icon(Icons.file_open_outlined),
                       label: const Text('导入 OPML 文件', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: theme.colorScheme.error),
+                        foregroundColor: theme.colorScheme.error,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: _importSqliteFile,
+                      icon: const Icon(Icons.storage_rounded),
+                      label: const Text('导入并覆盖本地数据库 (.sqlite)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // 第二部分：解析成功后的配置结果卡片
             if (_hasLoaded) ...[
               Card(
                 margin: const EdgeInsets.symmetric(vertical: 12),
