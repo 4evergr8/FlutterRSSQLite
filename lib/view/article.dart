@@ -36,8 +36,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
   Future<void> _loadArticles() async {
     setState(() => _isLoading = true);
     try {
-      final query = _db.select(_db.articles)
-        ..where((tbl) => tbl.feedUrl.equals(widget.feed.feedUrl));
+      final query = _db.select(_db.articles)..where((tbl) => tbl.feedUrl.equals(widget.feed.feedUrl));
 
       if (_currentSubIndex == 0) {
         // 未读：过滤掉 0（已读）和 1（星标）
@@ -65,28 +64,31 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
 
     try {
       final xmlText = await downloadXmlFromServer(widget.feed.feedUrl);
-      final parsedArticles = parseRssArticles(xmlText);
+
+      // 调用合并后的平铺函数
+      final parsedData = parseRss(xmlText);
+      final List<Map<String, String>> parsedArticles = List<Map<String, String>>.from(parsedData['articles']);
 
       // 提取解析到的新值
-      final String? parsedSite = parsedArticles.isNotEmpty ? parsedArticles.first['feedSiteUrl'] : null;
-      final String? parsedIcon = parsedArticles.isNotEmpty ? parsedArticles.first['feedIconUrl'] : null;
+      final String? parsedSite = parsedData['siteUrl'];
+      final String? parsedIcon = parsedData['iconUrl'];
 
-      // 如果有解析到有效字段就用新值覆盖，没有解析到就严格保留原本的现有值
+      // 逻辑：如果解析到了非空字段就覆盖新值，否则严格保留原本数据库里的值
       final String siteUrl = (parsedSite != null && parsedSite.trim().isNotEmpty)
-          ? parsedSite
+          ? parsedSite.trim()
           : widget.feed.siteUrl;
 
       final String iconUrl = (parsedIcon != null && parsedIcon.trim().isNotEmpty)
-          ? parsedIcon
+          ? parsedIcon.trim()
           : widget.feed.iconUrl;
 
       for (var item in parsedArticles) {
-        final existing = await (_db.select(_db.articles)
-          ..where((tbl) => tbl.guid.equals(item['guid']!))).getSingleOrNull();
+        final existing = await (_db.select(
+          _db.articles,
+        )..where((tbl) => tbl.guid.equals(item['guid']!))).getSingleOrNull();
 
         if (existing != null) {
-          await (_db.update(_db.articles)
-            ..where((tbl) => tbl.guid.equals(item['guid']!))).write(
+          await (_db.update(_db.articles)..where((tbl) => tbl.guid.equals(item['guid']!))).write(
             ArticlesCompanion(
               title: drift.Value(item['title']!),
               feedUrl: drift.Value(widget.feed.feedUrl),
@@ -99,26 +101,27 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
             ),
           );
         } else {
-          await _db.into(_db.articles).insert(
-            ArticlesCompanion(
-              guid: drift.Value(item['guid']!),
-              title: drift.Value(item['title']!),
-              feedUrl: drift.Value(widget.feed.feedUrl),
-              link: drift.Value(item['link']!),
-              description: drift.Value(item['description']!),
-              content: drift.Value(item['content']!),
-              enclosure: drift.Value(item['enclosure']!),
-              author: drift.Value(item['author']!),
-              date: drift.Value(item['date']!),
-              status: const drift.Value('2'),
-            ),
-          );
+          await _db
+              .into(_db.articles)
+              .insert(
+                ArticlesCompanion(
+                  guid: drift.Value(item['guid']!),
+                  title: drift.Value(item['title']!),
+                  feedUrl: drift.Value(widget.feed.feedUrl),
+                  link: drift.Value(item['link']!),
+                  description: drift.Value(item['description']!),
+                  content: drift.Value(item['content']!),
+                  enclosure: drift.Value(item['enclosure']!),
+                  author: drift.Value(item['author']!),
+                  date: drift.Value(item['date']!),
+                  status: const drift.Value('2'),
+                ),
+              );
         }
       }
 
       final nowTimestamp = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
-      await (_db.update(_db.feeds)
-        ..where((tbl) => tbl.feedUrl.equals(widget.feed.feedUrl))).write(
+      await (_db.update(_db.feeds)..where((tbl) => tbl.feedUrl.equals(widget.feed.feedUrl))).write(
         FeedsCompanion(
           lastUpdated: drift.Value(nowTimestamp),
           siteUrl: drift.Value(siteUrl),
@@ -158,10 +161,9 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
   Future<void> _handleArticleTap(Article article) async {
     try {
       final newStatus = article.status == '1' ? '1' : '0';
-      await (_db.update(_db.articles)
-        ..where((tbl) => tbl.guid.equals(article.guid))).write(
-        ArticlesCompanion(status: drift.Value(newStatus)),
-      );
+      await (_db.update(
+        _db.articles,
+      )..where((tbl) => tbl.guid.equals(article.guid))).write(ArticlesCompanion(status: drift.Value(newStatus)));
     } catch (e) {
       debugPrint('标记已读失败: $e');
     }
@@ -180,10 +182,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
 
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ReaderScreen(
-            allArticles: _articles,
-            initialIndex: currentIndex,
-          ),
+          builder: (context) => ReaderScreen(allArticles: _articles, initialIndex: currentIndex),
         ),
       );
 
@@ -198,150 +197,141 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.feed.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {},
-          ),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.add_circle_outline), onPressed: () {})],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _articles.isEmpty
           ? RefreshIndicator(
-        onRefresh: _refreshCurrentFeed,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: const Center(child: Text('当前分类下没有文章\n下拉可以触发同步刷新')),
-          ),
-        ),
-      )
+              onRefresh: _refreshCurrentFeed,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: const Center(child: Text('当前分类下没有文章\n下拉可以触发同步刷新')),
+                ),
+              ),
+            )
           : RefreshIndicator(
-        onRefresh: _refreshCurrentFeed,
-        child: ListView.separated(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: _articles.length,
-          separatorBuilder: (context, index) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final article = _articles[index];
-            final summary = _getSummary(article.description, article.content);
-            final dateText = _formatTimestamp(article.date);
+              onRefresh: _refreshCurrentFeed,
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: _articles.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final article = _articles[index];
+                  final summary = _getSummary(article.description, article.content);
+                  final dateText = _formatTimestamp(article.date);
 
-            final isUnread = article.status != '0' && article.status != '1';
+                  final isUnread = article.status != '0' && article.status != '1';
 
-            const double imageWidth = 110.0;
-            const double imageHeight = 80.0;
+                  const double imageWidth = 110.0;
+                  const double imageHeight = 80.0;
 
-            return InkWell(
-              onTap: () => _handleArticleTap(article),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
+                  return InkWell(
+                    onTap: () => _handleArticleTap(article),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  article.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.2,
-                                    color: isUnread
-                                        ? colorScheme.onSurface
-                                        : colorScheme.onSurface.withOpacity(0.5),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        article.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          height: 1.2,
+                                          color: isUnread
+                                              ? colorScheme.onSurface
+                                              : colorScheme.onSurface.withOpacity(0.5),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        summary,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          height: 1.3,
+                                          color: colorScheme.onSurfaceVariant.withOpacity(isUnread ? 1.0 : 0.5),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  summary,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    height: 1.3,
-                                    color: colorScheme.onSurfaceVariant.withOpacity(
-                                      isUnread ? 1.0 : 0.5,
+                                const SizedBox(width: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: CachedNetworkImage(
+                                    imageUrl: article.enclosure,
+                                    width: imageWidth,
+                                    height: imageHeight,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                    placeholder: (context, url) => Container(
+                                      width: imageWidth,
+                                      height: imageHeight,
+                                      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                      alignment: Alignment.center,
+                                      child: const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 1.5),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) => Container(
+                                      width: imageWidth,
+                                      height: imageHeight,
+                                      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                      alignment: Alignment.center,
+                                      child: Icon(Icons.broken_image, size: 20, color: colorScheme.outline),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: CachedNetworkImage(
-                              imageUrl: article.enclosure,
-                              width: imageWidth,
-                              height: imageHeight,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              placeholder: (context, url) => Container(
-                                width: imageWidth,
-                                height: imageHeight,
-                                color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                alignment: Alignment.center,
-                                child: const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    article.author.isNotEmpty ? '作者: ${article.author}' : '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 11, color: colorScheme.outline),
+                                  ),
                                 ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                width: imageWidth,
-                                height: imageHeight,
-                                color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                alignment: Alignment.center,
-                                child: Icon(Icons.broken_image, size: 20, color: colorScheme.outline),
-                              ),
+                                const SizedBox(width: 12),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (article.status == '1') Icon(Icons.star, size: 12, color: colorScheme.primary),
+                                    if (article.status == '1') const SizedBox(width: 4),
+                                    Text(dateText, style: TextStyle(fontSize: 11, color: colorScheme.outline)),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              article.author.isNotEmpty ? '作者: ${article.author}' : '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 11, color: colorScheme.outline),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (article.status == '1')
-                                Icon(Icons.star, size: 12, color: colorScheme.primary),
-                              if (article.status == '1')
-                                const SizedBox(width: 4),
-                              Text(dateText, style: TextStyle(fontSize: 11, color: colorScheme.outline)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
@@ -349,16 +339,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
             activeIcon: Icon(Icons.mark_as_unread),
             label: '未读',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.rss_feed_outlined),
-            activeIcon: Icon(Icons.rss_feed),
-            label: '所有',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star_outline),
-            activeIcon: Icon(Icons.star),
-            label: '星标',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.rss_feed_outlined), activeIcon: Icon(Icons.rss_feed), label: '所有'),
+          BottomNavigationBarItem(icon: Icon(Icons.star_outline), activeIcon: Icon(Icons.star), label: '星标'),
         ],
         currentIndex: _currentSubIndex,
         selectedItemColor: colorScheme.primary,
