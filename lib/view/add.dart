@@ -21,7 +21,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _siteUrlController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController(text: '默认');
+  final TextEditingController _categoryController = TextEditingController(text: '');
   final TextEditingController _iconUrlController = TextEditingController();
 
   // 状态：是否成功获取到了 XML 元数据
