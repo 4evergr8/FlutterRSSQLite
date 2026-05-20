@@ -16,6 +16,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.5
   url_launcher: ^6.3.2
+  share_plus: ^12.0.2
   collection: ^1.19.1
   flutter_widget_from_html: ^0.17.2
   cached_network_image: ^3.4.1
