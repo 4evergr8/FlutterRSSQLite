@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart'; // 更换为此 HTML 渲染库
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../database.dart';
@@ -38,18 +38,40 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (index < 0 || index >= widget.allArticles.length) return;
     final article = widget.allArticles[index];
 
-    if (article.isRead == 'false') {
+    // 0代表已读，1代表星标。如果当前既不是已读也不是星标（即未读），则标记为已读
+    if (article.status != '0' && article.status != '1') {
       try {
         await (_db.update(
           _db.articles,
-        )..where((tbl) => tbl.guid.equals(article.guid))).write(const ArticlesCompanion(isRead: drift.Value('true')));
+        )..where((tbl) => tbl.guid.equals(article.guid))).write(const ArticlesCompanion(status: drift.Value('0')));
 
         setState(() {
-          widget.allArticles[index] = article.copyWith(isRead: 'true');
+          widget.allArticles[index] = article.copyWith(status: '0');
         });
       } catch (e) {
         debugPrint('阅读器标记已读失败: $e');
       }
+    }
+  }
+
+  Future<void> _toggleStar() async {
+    if (_currentIndex < 0 || _currentIndex >= widget.allArticles.length) return;
+    final article = widget.allArticles[_currentIndex];
+
+    // 如果当前已经是星标（1），取消星标变更为已读（0）；否则变更为星标（1）
+    final isStarred = article.status == '1';
+    final newStatus = isStarred ? '0' : '1';
+
+    try {
+      await (_db.update(
+        _db.articles,
+      )..where((tbl) => tbl.guid.equals(article.guid))).write(ArticlesCompanion(status: drift.Value(newStatus)));
+
+      setState(() {
+        widget.allArticles[_currentIndex] = article.copyWith(status: newStatus);
+      });
+    } catch (e) {
+      debugPrint('切换星标状态失败: $e');
     }
   }
 
@@ -95,6 +117,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final currentArticle = widget.allArticles[_currentIndex];
     final bool isFirst = _currentIndex == 0;
     final bool isLast = _currentIndex == widget.allArticles.length - 1;
+    final bool isStarred = currentArticle.status == '1';
 
     final String mainContent = currentArticle.content.trim().isNotEmpty
         ? currentArticle.content
@@ -162,6 +185,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
               icon: const Icon(Icons.arrow_back_ios_new),
               color: isFirst ? colorScheme.outline.withOpacity(0.3) : colorScheme.primary,
               onPressed: isFirst ? null : () => _changeArticle(_currentIndex - 1),
+            ),
+            IconButton(
+              icon: Icon(isStarred ? Icons.star : Icons.star_border),
+              color: isStarred ? Colors.amber : colorScheme.primary,
+              onPressed: _toggleStar,
             ),
             IconButton(
               icon: const Icon(Icons.language),
