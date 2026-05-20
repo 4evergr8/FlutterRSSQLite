@@ -1,10 +1,6 @@
-import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+import 'package:drift_flutter/drift_flutter.dart'; // 引入官方推荐的多端支持包
 
-// 声明生成的文件名（运行 build_runner 后自动生成）
 part 'database.g.dart';
 
 // 1. 设置表
@@ -38,7 +34,7 @@ class Articles extends Table {
   TextColumn get link => text()();        // 网页链接
   TextColumn get description => text()(); // 描述
   TextColumn get content => text()();     // 内容
-  TextColumn get enclosure => text()();       // 媒体
+  TextColumn get enclosure => text()();   // 媒体
   TextColumn get author => text()();      // 作者
   TextColumn get date => text()();        // 日期
   TextColumn get isRead => text()();      // 是否已读
@@ -47,20 +43,21 @@ class Articles extends Table {
   Set<Column> get primaryKey => {guid};   // 指定guid为主键
 }
 
-// 4. 数据库实例类
+// 4. 数据库实例类（完美支持全平台）
 @DriftDatabase(tables: [Settings, Feeds, Articles])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  // 通过 super 传入 driftDatabase 自动适配 Android/iOS/Web/Windows/Mac/Linux
+  AppDatabase() : super(
+    driftDatabase(
+      name: 'app_database',
+      // Web 端配置：如果你需要数据在浏览器刷新后不丢失（持久化），需要传入以下参数
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+      ),
+    ),
+  );
 
   @override
   int get schemaVersion => 1;
-}
-
-// 5. 物理存储连接配置（Android 端）
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'database.sqlite'));
-    return NativeDatabase.createInBackground(file);
-  });
 }
