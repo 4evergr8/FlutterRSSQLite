@@ -18,6 +18,7 @@ dependencies:
   collection: any
   flutter_widget_from_html: any
   cached_network_image: any
+  file_picker: any
   path: any
   google_fonts: any
   xml: any
