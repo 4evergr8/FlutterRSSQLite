@@ -151,6 +151,10 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                 final summary = _getSummary(article.description, article.content);
                 final dateText = _formatTimestamp(article.date);
 
+                // 定义图片区域的固定尺寸
+                const double imageWidth = 100.0;
+                const double imageHeight = 75.0;
+
                 return InkWell(
                   onTap: () => _handleArticleTap(article),
                   child: Padding(
@@ -158,80 +162,92 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 标题
+                        // 顶栏：标题（固定单行，超出截断）
                         Text(
                           article.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            // 如果是未读，字体颜色加深；已读则变浅灰色灰化
                             color: article.isRead == 'false'
                                 ? colorScheme.onSurface
-                                : colorScheme.onSurface.withValues(),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-
-                        // 描述/摘要
-                        Text(
-                          summary,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: colorScheme.onSurfaceVariant.withOpacity(article.isRead == 'false' ? 1.0 : 0.5),
+                                : colorScheme.onSurface.withOpacity(0.5),
                           ),
                         ),
                         const SizedBox(height: 8),
 
-                        // enclosure 插图（如果链接不为空，则用网络组件加载显示，没有就不占位）
-// enclosure 插图（如果链接不为空，则显示固定大小的居中图片）
-                        if (article.enclosure.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 160, // 固定高度
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.network(
-                                article.enclosure,
-                                cacheHeight: 160,
-                                width: double.infinity,
-                                height: 160,
-                                // BoxFit.cover 保证图片不拉伸变形，从中心向外裁剪填满容器
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center, // 确保图片中心在控件中心
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  // 正在加载时，显示固定大小的占位符（浅灰色块加微弱的进度条）
-                                  return Container(
-                                    color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                    alignment: Alignment.center,
-                                    child: SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                            : null,
-                                      ),
+                        // 中间栏：左边描述，右边图片（或空白占位）
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 左侧描述：自动占满剩余宽度
+                            Expanded(
+                              child: SizedBox(
+                                height: imageHeight, // 与右侧图片高度一致，确保描述对齐
+                                child: Text(
+                                  summary,
+                                  maxLines: 3, // 允许显示多行
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colorScheme.onSurfaceVariant.withOpacity(
+                                      article.isRead == 'false' ? 1.0 : 0.5,
                                     ),
-                                  );
-                                },
-                                // 加载失败时使用 Container 占位，确保高度依然是 160，不破坏布局
-                                errorBuilder: (_, __, ___) => Container(
-                                  color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                  alignment: Alignment.center,
-                                  child: Icon(Icons.broken_image, color: colorScheme.outline),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                        ],
+                            const SizedBox(width: 12),
 
-                        // 日期和作者
+                            // 右侧图片或占位符：不管有无图片，空间大小完全相同
+                            SizedBox(
+                              width: imageWidth,
+                              height: imageHeight,
+                              child: article.enclosure.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.network(
+                                        article.enclosure,
+                                        cacheWidth: imageWidth.toInt() * 2,
+                                        // 优化内存缓存
+                                        cacheHeight: imageHeight.toInt() * 2,
+                                        width: imageWidth,
+                                        height: imageHeight,
+                                        fit: BoxFit.cover,
+                                        alignment: Alignment.center,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Container(
+                                            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                            alignment: Alignment.center,
+                                            child: SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 1.5,
+                                                value: loadingProgress.expectedTotalBytes != null
+                                                    ? loadingProgress.cumulativeBytesLoaded /
+                                                          loadingProgress.expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder: (_, __, ___) => Container(
+                                          color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                          alignment: Alignment.center,
+                                          child: Icon(Icons.broken_image, size: 20, color: colorScheme.outline),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(), // 无图片时保持纯空白，但外层 SizedBox 依然保留宽高占位
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // 底栏：日期和作者
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
