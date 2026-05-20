@@ -113,7 +113,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
                 date: drift.Value(item['date']!),
                 isRead: drift.Value(item['isRead']!),
               )).toList(),
-              mode: drift.InsertMode.insertOrReplace,
+              mode: drift.InsertMode.insertOrIgnore,
             );
           });
 
