@@ -104,12 +104,21 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
           final xmlText = await downloadXmlFromServer(feed.feedUrl);
           final parsedArticles = parseRssArticles(xmlText);
 
-          final String siteUrl = parsedArticles.isNotEmpty
-              ? (parsedArticles.first['feedSiteUrl'] ?? feed.siteUrl)
-              : feed.siteUrl;
-          final String iconUrl = parsedArticles.isNotEmpty
-              ? (parsedArticles.first['feedIconUrl'] ?? feed.iconUrl)
-              : feed.iconUrl;
+          // 默认维持数据库现有的值
+          String siteUrl = feed.siteUrl;
+          String iconUrl = feed.iconUrl;
+
+          if (parsedArticles.isNotEmpty) {
+            final firstItem = parsedArticles.first;
+
+            // 检查解析结果中是否存在该字段的 key，如果存在才进行强制覆盖
+            if (firstItem.containsKey('feedSiteUrl')) {
+              siteUrl = firstItem['feedSiteUrl'] ?? '';
+            }
+            if (firstItem.containsKey('feedIconUrl')) {
+              iconUrl = firstItem['feedIconUrl'] ?? '';
+            }
+          }
 
           for (var item in parsedArticles) {
             final existing = await (_db.select(
@@ -133,19 +142,19 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
               await _db
                   .into(_db.articles)
                   .insert(
-                    ArticlesCompanion(
-                      guid: drift.Value(item['guid']!),
-                      title: drift.Value(item['title']!),
-                      feedUrl: drift.Value(feed.feedUrl),
-                      link: drift.Value(item['link']!),
-                      description: drift.Value(item['description']!),
-                      content: drift.Value(item['content']!),
-                      enclosure: drift.Value(item['enclosure']!),
-                      author: drift.Value(item['author']!),
-                      date: drift.Value(item['date']!),
-                      status: const drift.Value('2'),
-                    ),
-                  );
+                ArticlesCompanion(
+                  guid: drift.Value(item['guid']!),
+                  title: drift.Value(item['title']!),
+                  feedUrl: drift.Value(feed.feedUrl),
+                  link: drift.Value(item['link']!),
+                  description: drift.Value(item['description']!),
+                  content: drift.Value(item['content']!),
+                  enclosure: drift.Value(item['enclosure']!),
+                  author: drift.Value(item['author']!),
+                  date: drift.Value(item['date']!),
+                  status: const drift.Value('2'),
+                ),
+              );
             }
           }
 
