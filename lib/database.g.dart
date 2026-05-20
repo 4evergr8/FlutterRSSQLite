@@ -778,10 +778,10 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _isReadMeta = const VerificationMeta('isRead');
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
-  late final GeneratedColumn<String> isRead = GeneratedColumn<String>(
-    'is_read',
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -798,7 +798,7 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     enclosure,
     author,
     date,
-    isRead,
+    status,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -887,13 +887,13 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     } else if (isInserting) {
       context.missing(_dateMeta);
     }
-    if (data.containsKey('is_read')) {
+    if (data.containsKey('status')) {
       context.handle(
-        _isReadMeta,
-        isRead.isAcceptableOrUnknown(data['is_read']!, _isReadMeta),
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     } else if (isInserting) {
-      context.missing(_isReadMeta);
+      context.missing(_statusMeta);
     }
     return context;
   }
@@ -940,9 +940,9 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
         DriftSqlType.string,
         data['${effectivePrefix}date'],
       )!,
-      isRead: attachedDatabase.typeMapping.read(
+      status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}is_read'],
+        data['${effectivePrefix}status'],
       )!,
     );
   }
@@ -963,7 +963,7 @@ class Article extends DataClass implements Insertable<Article> {
   final String enclosure;
   final String author;
   final String date;
-  final String isRead;
+  final String status;
   const Article({
     required this.guid,
     required this.title,
@@ -974,7 +974,7 @@ class Article extends DataClass implements Insertable<Article> {
     required this.enclosure,
     required this.author,
     required this.date,
-    required this.isRead,
+    required this.status,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -988,7 +988,7 @@ class Article extends DataClass implements Insertable<Article> {
     map['enclosure'] = Variable<String>(enclosure);
     map['author'] = Variable<String>(author);
     map['date'] = Variable<String>(date);
-    map['is_read'] = Variable<String>(isRead);
+    map['status'] = Variable<String>(status);
     return map;
   }
 
@@ -1003,7 +1003,7 @@ class Article extends DataClass implements Insertable<Article> {
       enclosure: Value(enclosure),
       author: Value(author),
       date: Value(date),
-      isRead: Value(isRead),
+      status: Value(status),
     );
   }
 
@@ -1022,7 +1022,7 @@ class Article extends DataClass implements Insertable<Article> {
       enclosure: serializer.fromJson<String>(json['enclosure']),
       author: serializer.fromJson<String>(json['author']),
       date: serializer.fromJson<String>(json['date']),
-      isRead: serializer.fromJson<String>(json['isRead']),
+      status: serializer.fromJson<String>(json['status']),
     );
   }
   @override
@@ -1038,7 +1038,7 @@ class Article extends DataClass implements Insertable<Article> {
       'enclosure': serializer.toJson<String>(enclosure),
       'author': serializer.toJson<String>(author),
       'date': serializer.toJson<String>(date),
-      'isRead': serializer.toJson<String>(isRead),
+      'status': serializer.toJson<String>(status),
     };
   }
 
@@ -1052,7 +1052,7 @@ class Article extends DataClass implements Insertable<Article> {
     String? enclosure,
     String? author,
     String? date,
-    String? isRead,
+    String? status,
   }) => Article(
     guid: guid ?? this.guid,
     title: title ?? this.title,
@@ -1063,7 +1063,7 @@ class Article extends DataClass implements Insertable<Article> {
     enclosure: enclosure ?? this.enclosure,
     author: author ?? this.author,
     date: date ?? this.date,
-    isRead: isRead ?? this.isRead,
+    status: status ?? this.status,
   );
   Article copyWithCompanion(ArticlesCompanion data) {
     return Article(
@@ -1078,7 +1078,7 @@ class Article extends DataClass implements Insertable<Article> {
       enclosure: data.enclosure.present ? data.enclosure.value : this.enclosure,
       author: data.author.present ? data.author.value : this.author,
       date: data.date.present ? data.date.value : this.date,
-      isRead: data.isRead.present ? data.isRead.value : this.isRead,
+      status: data.status.present ? data.status.value : this.status,
     );
   }
 
@@ -1094,7 +1094,7 @@ class Article extends DataClass implements Insertable<Article> {
           ..write('enclosure: $enclosure, ')
           ..write('author: $author, ')
           ..write('date: $date, ')
-          ..write('isRead: $isRead')
+          ..write('status: $status')
           ..write(')'))
         .toString();
   }
@@ -1110,7 +1110,7 @@ class Article extends DataClass implements Insertable<Article> {
     enclosure,
     author,
     date,
-    isRead,
+    status,
   );
   @override
   bool operator ==(Object other) =>
@@ -1125,7 +1125,7 @@ class Article extends DataClass implements Insertable<Article> {
           other.enclosure == this.enclosure &&
           other.author == this.author &&
           other.date == this.date &&
-          other.isRead == this.isRead);
+          other.status == this.status);
 }
 
 class ArticlesCompanion extends UpdateCompanion<Article> {
@@ -1138,7 +1138,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
   final Value<String> enclosure;
   final Value<String> author;
   final Value<String> date;
-  final Value<String> isRead;
+  final Value<String> status;
   final Value<int> rowid;
   const ArticlesCompanion({
     this.guid = const Value.absent(),
@@ -1150,7 +1150,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     this.enclosure = const Value.absent(),
     this.author = const Value.absent(),
     this.date = const Value.absent(),
-    this.isRead = const Value.absent(),
+    this.status = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ArticlesCompanion.insert({
@@ -1163,7 +1163,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     required String enclosure,
     required String author,
     required String date,
-    required String isRead,
+    required String status,
     this.rowid = const Value.absent(),
   }) : guid = Value(guid),
        title = Value(title),
@@ -1174,7 +1174,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
        enclosure = Value(enclosure),
        author = Value(author),
        date = Value(date),
-       isRead = Value(isRead);
+       status = Value(status);
   static Insertable<Article> custom({
     Expression<String>? guid,
     Expression<String>? title,
@@ -1185,7 +1185,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     Expression<String>? enclosure,
     Expression<String>? author,
     Expression<String>? date,
-    Expression<String>? isRead,
+    Expression<String>? status,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1198,7 +1198,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
       if (enclosure != null) 'enclosure': enclosure,
       if (author != null) 'author': author,
       if (date != null) 'date': date,
-      if (isRead != null) 'is_read': isRead,
+      if (status != null) 'status': status,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1213,7 +1213,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     Value<String>? enclosure,
     Value<String>? author,
     Value<String>? date,
-    Value<String>? isRead,
+    Value<String>? status,
     Value<int>? rowid,
   }) {
     return ArticlesCompanion(
@@ -1226,7 +1226,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
       enclosure: enclosure ?? this.enclosure,
       author: author ?? this.author,
       date: date ?? this.date,
-      isRead: isRead ?? this.isRead,
+      status: status ?? this.status,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1261,8 +1261,8 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     if (date.present) {
       map['date'] = Variable<String>(date.value);
     }
-    if (isRead.present) {
-      map['is_read'] = Variable<String>(isRead.value);
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1282,7 +1282,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
           ..write('enclosure: $enclosure, ')
           ..write('author: $author, ')
           ..write('date: $date, ')
-          ..write('isRead: $isRead, ')
+          ..write('status: $status, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1685,7 +1685,7 @@ typedef $$ArticlesTableCreateCompanionBuilder =
       required String enclosure,
       required String author,
       required String date,
-      required String isRead,
+      required String status,
       Value<int> rowid,
     });
 typedef $$ArticlesTableUpdateCompanionBuilder =
@@ -1699,7 +1699,7 @@ typedef $$ArticlesTableUpdateCompanionBuilder =
       Value<String> enclosure,
       Value<String> author,
       Value<String> date,
-      Value<String> isRead,
+      Value<String> status,
       Value<int> rowid,
     });
 
@@ -1757,8 +1757,8 @@ class $$ArticlesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get isRead => $composableBuilder(
-    column: $table.isRead,
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1817,8 +1817,8 @@ class $$ArticlesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get isRead => $composableBuilder(
-    column: $table.isRead,
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -1861,8 +1861,8 @@ class $$ArticlesTableAnnotationComposer
   GeneratedColumn<String> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
-  GeneratedColumn<String> get isRead =>
-      $composableBuilder(column: $table.isRead, builder: (column) => column);
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
 }
 
 class $$ArticlesTableTableManager
@@ -1902,7 +1902,7 @@ class $$ArticlesTableTableManager
                 Value<String> enclosure = const Value.absent(),
                 Value<String> author = const Value.absent(),
                 Value<String> date = const Value.absent(),
-                Value<String> isRead = const Value.absent(),
+                Value<String> status = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ArticlesCompanion(
                 guid: guid,
@@ -1914,7 +1914,7 @@ class $$ArticlesTableTableManager
                 enclosure: enclosure,
                 author: author,
                 date: date,
-                isRead: isRead,
+                status: status,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1928,7 +1928,7 @@ class $$ArticlesTableTableManager
                 required String enclosure,
                 required String author,
                 required String date,
-                required String isRead,
+                required String status,
                 Value<int> rowid = const Value.absent(),
               }) => ArticlesCompanion.insert(
                 guid: guid,
@@ -1940,7 +1940,7 @@ class $$ArticlesTableTableManager
                 enclosure: enclosure,
                 author: author,
                 date: date,
-                isRead: isRead,
+                status: status,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
