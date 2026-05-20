@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rss/view/reader.dart';
 import 'package:rss/widget.dart';
 import 'package:url_launcher/url_launcher.dart'; // 用于外部浏览器打开链接
-
-import '../database.dart';
+import 'package:rss/database.dart';
 
 final _db = AppDatabase();
 
