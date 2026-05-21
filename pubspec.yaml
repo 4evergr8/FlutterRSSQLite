@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.9
   drift: ^2.33.0
   flutter_launcher_icons:
+  dio:
   drift_flutter: ^0.3.0
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.5
