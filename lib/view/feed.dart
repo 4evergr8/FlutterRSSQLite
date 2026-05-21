@@ -97,9 +97,11 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
 
       for (var feed in sortedFeeds) {
         try {
+          showErrorSnackBarGlobal('开始更新订阅源 [${feed.title}] ');
           final xmlText = await downloadXmlFromServer(feed.feedUrl);
-
+          showErrorSnackBarGlobal('下载完成订阅源 [${feed.title}] ');
           final parsedData = parseRss(xmlText);
+          showErrorSnackBarGlobal('解析完成订阅源 [${feed.title}] ');
           final List<Map<String, String>> parsedArticles = List<Map<String, String>>.from(parsedData['articles']);
 
           final String siteUrl = parsedData['siteUrl'] ?? '';
@@ -126,6 +128,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
               }
             });
           }
+          showErrorSnackBarGlobal('插入文章完成[${feed.title}] ');
 
           final nowTimestamp = (DateTime.now().millisecondsSinceEpoch).toString();
           await (_db.update(_db.feeds)..where((tbl) => tbl.feedUrl.equals(feed.feedUrl))).write(
@@ -135,6 +138,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
               iconUrl: drift.Value(iconUrl),
             ),
           );
+          showErrorSnackBarGlobal('修改时间完成[${feed.title}] ');
         } catch (singleError) {
           showErrorSnackBarGlobal('更新订阅源 [${feed.title}] 失败，已跳过: $singleError');
           continue;
