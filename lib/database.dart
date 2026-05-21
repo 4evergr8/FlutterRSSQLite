@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart'; // 引入官方推荐的多端支持包
+import 'package:drift_flutter/drift_flutter.dart';
 
 part 'database.g.dart';
 
 // 1. 设置表
 class Settings extends Table {
   TextColumn get key => text()();        // 键名
-  TextColumn get value => text().nullable()();      // 键值
+  TextColumn get value => text().withDefault(const Constant(''))();      // 键值
 
   @override
   Set<Column> get primaryKey => {key};   // 指定键名为主键
@@ -15,12 +15,12 @@ class Settings extends Table {
 // 2. 订阅表
 class Feeds extends Table {
   TextColumn get feedUrl => text()();     // 订阅链接
-  TextColumn get siteUrl => text().nullable()();     // 网站链接
-  TextColumn get title => text().nullable()();       // 显示名
-  TextColumn get category => text().nullable()();    // 分组名
-  TextColumn get iconUrl => text().nullable()();     // 图标链接
-  TextColumn get lastUpdated => text().nullable()(); // 上次更新时间戳
-  TextColumn get displayMode => text().nullable()(); // 显示模式
+  TextColumn get siteUrl => text().withDefault(const Constant(''))();     // 网站链接
+  TextColumn get title => text().withDefault(const Constant(''))();       // 显示名
+  TextColumn get category => text().withDefault(const Constant(''))();    // 分组名
+  TextColumn get iconUrl => text().withDefault(const Constant(''))();     // 图标链接
+  TextColumn get lastUpdated => text().withDefault(const Constant('0'))(); // 上次更新时间戳
+  TextColumn get displayMode => text().withDefault(const Constant(''))(); // 显示模式
 
   @override
   Set<Column> get primaryKey => {feedUrl}; // 指定订阅链接为主键
@@ -29,15 +29,15 @@ class Feeds extends Table {
 // 3. 内容表
 class Articles extends Table {
   TextColumn get guid => text()();        // guid
-  TextColumn get title => text().nullable()();       // 标题
-  TextColumn get feedUrl => text().nullable()();     // 所属订阅
-  TextColumn get link => text().nullable()();        // 网页链接
-  TextColumn get description => text().nullable()(); // 描述
-  TextColumn get content => text().nullable()();     // 内容
-  TextColumn get enclosure => text().nullable()();   // 媒体
-  TextColumn get author => text().nullable()();      // 作者
-  TextColumn get date => text().nullable()();        // 日期
-  TextColumn get status => text().nullable()();      // 是否已读
+  TextColumn get title => text().withDefault(const Constant(''))();       // 标题
+  TextColumn get feedUrl => text().withDefault(const Constant(''))();     // 所属订阅
+  TextColumn get link => text().withDefault(const Constant(''))();        // 网页链接
+  TextColumn get description => text().withDefault(const Constant(''))(); // 描述
+  TextColumn get content => text().withDefault(const Constant(''))();     // 内容
+  TextColumn get enclosure => text().withDefault(const Constant(''))();   // 媒体
+  TextColumn get author => text().withDefault(const Constant(''))();      // 作者
+  TextColumn get date => text().withDefault(const Constant(''))();        // 日期
+  TextColumn get status => text().withDefault(const Constant(''))();      // 是否已读
 
   @override
   Set<Column> get primaryKey => {guid};   // 指定guid为主键
@@ -59,5 +59,5 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 2; // 注意：修改了表结构，需要将版本号加 1（升级到 2）
+  int get schemaVersion => 1;
 }
