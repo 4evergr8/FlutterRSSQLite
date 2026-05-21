@@ -1,10 +1,10 @@
-# RSSQlite3
+# RSSQLite
 
 <p align="center">
   <img src="./assets/aaa.png" alt="Logo" width="100" height="100">
 </p>
 
-<h3 align="center">RSSQlite3</h3>
+<h3 align="center">RSSQLite</h3>
 
 <p align="center">
   基于Flutter框架的RSS阅读器<br>
