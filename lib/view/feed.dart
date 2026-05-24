@@ -166,10 +166,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
               child: Text(
                 '没有匹配的订阅源\n下拉可以触发同步刷新',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  height: 1.5,
-                ),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary, height: 1.5),
               ),
             ),
           ),
