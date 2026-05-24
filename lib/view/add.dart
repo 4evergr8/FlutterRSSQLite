@@ -407,7 +407,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _selectedDisplayMode,
+                        initialValue: _selectedDisplayMode,
                         decoration: customInputDecoration('显示方式', Icons.switch_access_shortcut),
                         dropdownColor: theme.colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(12),
