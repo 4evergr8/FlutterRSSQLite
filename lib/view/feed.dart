@@ -162,11 +162,14 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.7,
-            child: const Center(
+            child: Center(
               child: Text(
                 '没有匹配的订阅源\n下拉可以触发同步刷新',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, height: 1.5),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  height: 1.5,
+                ),
               ),
             ),
           ),
@@ -220,10 +223,14 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
                     height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
-                      border: Border.all(color: Colors.white, width: 2),
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 4, offset: const Offset(0, 2)),
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.shadow.withAlpha(20),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
                     child: ClipRRect(
