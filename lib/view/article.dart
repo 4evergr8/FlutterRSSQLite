@@ -25,7 +25,6 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
   int _currentSubIndex = 0;
   List<Article> _articles = [];
   bool _isLoading = true;
-  bool _isSyncing = false; // 标记是否正在同步刷新
 
   @override
   void initState() {
@@ -98,7 +97,6 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
           );
         }).toList();
 
-
         await _db.batch((batch) {
           batch.insertAll(_db.articles, companions, mode: drift.InsertMode.insertOrIgnore);
         });
@@ -143,15 +141,6 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
   }
 
   Future<void> _handleArticleTap(Article article) async {
-    try {
-      final newStatus = article.status == '1' ? '1' : '0';
-      await (_db.update(
-        _db.articles,
-      )..where((tbl) => tbl.guid.equals(article.guid))).write(ArticlesCompanion(status: drift.Value(newStatus)));
-    } catch (e) {
-      debugPrint('标记已读失败: $e');
-    }
-
     if (widget.feed.displayMode == 'web') {
       final uri = Uri.parse(article.link);
       if (await canLaunchUrl(uri)) {
@@ -179,17 +168,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.feed.title),
-        actions: [
-          _isSyncing
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                )
-              : IconButton(icon: const Icon(Icons.refresh), tooltip: '刷新当前源', onPressed: _refreshCurrentFeed),
-        ],
-      ),
+      appBar: AppBar(title: Text(widget.feed.title)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _articles.isEmpty
@@ -199,11 +178,14 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.7,
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       '当前分类下没有文章\n可点击右上角按钮触发同步刷新',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, height: 1.5),
+                      style: TextStyle(
+                        color: colorScheme.primary.withAlpha(160), // 使用主题色并带有适度透明度以符合提示语视觉
+                        height: 1.5,
+                      ),
                     ),
                   ),
                 ),
