@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -63,12 +64,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       groups.forEach((category, feeds) {
         if (category.isEmpty) {
           for (final feed in feeds) {
-            sb.writeln('    <outline text="${_escapeXml(feed.title)}" title="${_escapeXml(feed.title)}" type="rss" xmlUrl="${_escapeXml(feed.feedUrl)}" htmlUrl="${_escapeXml(feed.siteUrl)}"/>');
+            sb.writeln(
+              '    <outline text="${_escapeXml(feed.title)}" title="${_escapeXml(feed.title)}" type="rss" xmlUrl="${_escapeXml(feed.feedUrl)}" htmlUrl="${_escapeXml(feed.siteUrl)}"/>',
+            );
           }
         } else {
           sb.writeln('    <outline text="${_escapeXml(category)}" title="${_escapeXml(category)}">');
           for (final feed in feeds) {
-            sb.writeln('      <outline text="${_escapeXml(feed.title)}" title="${_escapeXml(feed.title)}" type="rss" xmlUrl="${_escapeXml(feed.feedUrl)}" htmlUrl="${_escapeXml(feed.siteUrl)}"/>');
+            sb.writeln(
+              '      <outline text="${_escapeXml(feed.title)}" title="${_escapeXml(feed.title)}" type="rss" xmlUrl="${_escapeXml(feed.feedUrl)}" htmlUrl="${_escapeXml(feed.siteUrl)}"/>',
+            );
           }
           sb.writeln('    </outline>');
         }
@@ -82,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await file.writeAsString(sb.toString(), encoding: utf8);
 
       cancelLoading();
-      await Share.shareXFiles([XFile(file.path)], text: '导出 OPML 订阅源');
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: '导出 OPML 订阅源'));
     } catch (e) {
       cancelLoading();
       showErrorSnackBarGlobal('导出 OPML 失败: $e');
@@ -104,7 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await dbFile.copy(backupFile.path);
 
       cancelLoading();
-      await Share.shareXFiles([XFile(backupFile.path)], text: '备份数据库文件');
+      await SharePlus.instance.share(ShareParams(files: [XFile(backupFile.path)], text: '备份数据库文件'));
     } catch (e) {
       cancelLoading();
       showErrorSnackBarGlobal('导出数据库失败: $e');
@@ -157,7 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     TextField(controller: urlController, decoration: dialogInputDeco('订阅链接')),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: displayMode,
+                      initialValue: displayMode,
                       decoration: dialogInputDeco('显示方式'),
                       dropdownColor: theme.colorScheme.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(12),
@@ -301,39 +306,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _allFeeds.isEmpty
               ? const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: Text('暂无任何订阅源', style: TextStyle(color: Colors.grey)),
-            ),
-          )
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Text('暂无任何订阅源', style: TextStyle(color: Colors.grey)),
+                  ),
+                )
               : Column(
-            children: _allFeeds.map((feed) {
-              final groupText = feed.category.trim().isEmpty ? '未分组' : feed.category.trim();
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                elevation: 0.5,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                color: theme.colorScheme.surfaceContainerLow,
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  title: Text(
-                    feed.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    '[$groupText] ${feed.feedUrl}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.outline),
-                  ),
-                  trailing: Icon(Icons.edit_note_rounded, color: theme.colorScheme.primary),
-                  onTap: () => _showEditDialog(feed),
+                  children: _allFeeds.map((feed) {
+                    final groupText = feed.category.trim().isEmpty ? '未分组' : feed.category.trim();
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      elevation: 0.5,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      color: theme.colorScheme.surfaceContainerLow,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        title: Text(
+                          feed.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          '[$groupText] ${feed.feedUrl}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, color: theme.colorScheme.outline),
+                        ),
+                        trailing: Icon(Icons.edit_note_rounded, color: theme.colorScheme.primary),
+                        onTap: () => _showEditDialog(feed),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          ),
         ],
       ),
     );
