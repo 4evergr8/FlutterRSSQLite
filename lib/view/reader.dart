@@ -72,11 +72,35 @@ class _ReaderScreenState extends State<ReaderScreen> {
     }
   }
 
+  // 切换已读/未读状态
+  Future<void> _toggleRead() async {
+    if (_currentIndex < 0 || _currentIndex >= widget.allArticles.length) return;
+    final article = widget.allArticles[_currentIndex];
+
+    final isCurrentlyRead = article.status == '0' || article.status == '1';
+    // 取消已读时，星标也必须强制取消，变为未读状态 ''
+    final newStatus = isCurrentlyRead ? '' : '0';
+
+    try {
+      await (_db.update(
+        _db.articles,
+      )..where((tbl) => tbl.guid.equals(article.guid))).write(ArticlesCompanion(status: drift.Value(newStatus)));
+
+      setState(() {
+        widget.allArticles[_currentIndex] = article.copyWith(status: newStatus);
+      });
+    } catch (e) {
+      debugPrint('切换已读状态失败: $e');
+    }
+  }
+
+  // 切换星标状态
   Future<void> _toggleStar() async {
     if (_currentIndex < 0 || _currentIndex >= widget.allArticles.length) return;
     final article = widget.allArticles[_currentIndex];
 
     final isStarred = article.status == '1';
+    // 开启星标时变为 '1'（自带已读属性）；取消星标时变为 '0'（保留已读状态）
     final newStatus = isStarred ? '0' : '1';
 
     try {
@@ -135,6 +159,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final currentArticle = widget.allArticles[_currentIndex];
     final bool isFirst = _currentIndex == 0;
     final bool isLast = _currentIndex == widget.allArticles.length - 1;
+
+    // 逻辑判定：状态为 '0' 或 '1' 均属于已读
+    final bool isRead = currentArticle.status == '0' || currentArticle.status == '1';
     final bool isStarred = currentArticle.status == '1';
 
     final String mainContent = currentArticle.content.trim().isNotEmpty
@@ -146,10 +173,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
         // 在 AppBar 底部放置进度条
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2.0),
@@ -219,26 +243,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: mainContent.isNotEmpty
                     ? HtmlWidget(
-                  mainContent,
-                  textStyle: TextStyle(
-                    fontSize: 16.0,
-                    height: 1.6,
-                    color: colorScheme.onSurface,
-                  ),
-                  onTapUrl: (url) async {
-                    await _launchInBrowser(url);
-                    return true;
-                  },
-                )
-                    : const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Text(
-                      '此文章没有可显示的文本内容',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
+                        mainContent,
+                        textStyle: TextStyle(fontSize: 16.0, height: 1.6, color: colorScheme.onSurface),
+                        onTapUrl: (url) async {
+                          await _launchInBrowser(url);
+                          return true;
+                        },
+                      )
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Text('此文章没有可显示的文本内容', style: TextStyle(color: colorScheme.outline)),
+                        ),
+                      ),
               ),
             ),
           ],
@@ -249,21 +266,31 @@ class _ReaderScreenState extends State<ReaderScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            // 1. 上一篇
             IconButton(
               icon: const Icon(Icons.arrow_back_ios_new),
               color: isFirst ? colorScheme.outline.withAlpha(76) : colorScheme.primary,
               onPressed: isFirst ? null : () => _changeArticle(_currentIndex - 1),
             ),
+            // 2. 已读/未读切换
             IconButton(
-              icon: Icon(isStarred ? Icons.star : Icons.star_border),
-              color: isStarred ? Colors.amber : colorScheme.primary,
-              onPressed: _toggleStar,
+              icon: Icon(isRead ? Icons.visibility : Icons.visibility_off),
+              color: isRead ? colorScheme.primary : colorScheme.outline.withAlpha(128),
+              onPressed: _toggleRead,
             ),
+            // 3. 浏览器打开
             IconButton(
               icon: const Icon(Icons.language),
               color: colorScheme.primary,
               onPressed: currentArticle.link.isNotEmpty ? () => _launchInBrowser(currentArticle.link) : null,
             ),
+            // 4. 星标切换
+            IconButton(
+              icon: Icon(isStarred ? Icons.star : Icons.star_border),
+              color: isStarred ? Colors.amber : colorScheme.primary,
+              onPressed: _toggleStar,
+            ),
+            // 5. 下一篇
             IconButton(
               icon: const Icon(Icons.arrow_forward_ios),
               color: isLast ? colorScheme.outline.withAlpha(76) : colorScheme.primary,
