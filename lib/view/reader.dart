@@ -27,7 +27,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _scrollController.addListener(_scrollListener); // 监听滚动事件
-    _markAsRead(_currentIndex);
+
   }
 
   @override
@@ -53,24 +53,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     });
   }
 
-  Future<void> _markAsRead(int index) async {
-    if (index < 0 || index >= widget.allArticles.length) return;
-    final article = widget.allArticles[index];
 
-    if (article.status != '0' && article.status != '1') {
-      try {
-        await (_db.update(
-          _db.articles,
-        )..where((tbl) => tbl.guid.equals(article.guid))).write(const ArticlesCompanion(status: drift.Value('0')));
-
-        setState(() {
-          widget.allArticles[index] = article.copyWith(status: '0');
-        });
-      } catch (e) {
-        debugPrint('阅读器标记已读失败: $e');
-      }
-    }
-  }
 
   // 切换已读/未读状态
   Future<void> _toggleRead() async {
@@ -123,7 +106,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
         _readingProgress = 0.0; // 切换文章时重置进度条
       });
       _scrollController.jumpTo(0);
-      _markAsRead(newIndex);
     }
   }
 
