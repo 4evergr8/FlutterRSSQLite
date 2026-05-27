@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:xml/xml.dart';
 
-/// 纯函数：传入 XML 文本，直接返回包含 title, siteUrl, iconUrl 和 articles 列表的 Map 键值对
+/// 纯函数：传入 XML 文本，直接返回包含 title, siteUrl, iconUrl, feedUrl 和 articles 列表的 Map 键值对
 Map<String, dynamic> parseRss(String xmlString) {
   final document = XmlDocument.parse(xmlString);
   final channel = document.findAllElements('channel').firstOrNull;
@@ -15,6 +15,11 @@ Map<String, dynamic> parseRss(String xmlString) {
   final feedTitle = channel.findElements('title').firstOrNull?.innerText ?? '未命名订阅源';
   final feedSiteUrl = channel.findElements('link').firstOrNull?.innerText ?? '';
   final feedIconUrl = channel.findElements('image').firstOrNull?.findElements('url').firstOrNull?.innerText ?? '';
+
+  // 新增：解析 <atom:link> 的 href 属性
+  // 匹配本地名称为 'link' 且命名空间为 'http://www.w3.org/2005/Atom' 的节点
+  final atomLinkNode = channel.findElements('link', namespace: 'http://www.w3.org/2005/Atom').firstOrNull;
+  final feedUrl = atomLinkNode?.getAttribute('href') ?? '';
 
   // 解析文章列表数据
   final List<Map<String, String>> articlesList = [];
@@ -63,6 +68,7 @@ Map<String, dynamic> parseRss(String xmlString) {
     'title': feedTitle.trim(),
     'siteUrl': feedSiteUrl.trim(),
     'iconUrl': feedIconUrl.trim(),
+    'feedUrl': feedUrl.trim(), // 新增返回键值对
     'articles': articlesList,
   };
 }
