@@ -51,7 +51,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_selectedIndex == 0 ? '未读订阅' : _selectedIndex == 1 ? '所有订阅' : '星标订阅'),
-        backgroundColor: colorScheme.surface,
+        //backgroundColor: colorScheme.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
