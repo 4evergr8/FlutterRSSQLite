@@ -46,12 +46,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_selectedIndex == 0 ? '未读订阅' : _selectedIndex == 1 ? '所有订阅' : '星标订阅'),
-        //backgroundColor: colorScheme.surface,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -98,9 +97,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.secondary,
-        backgroundColor: colorScheme.surface,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.secondary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
       ),
