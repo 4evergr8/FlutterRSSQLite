@@ -57,7 +57,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
         _nodeStatus = "启动中...";
       });
 
-      await Nodejs.start();
+      await Nodejs.startWithScript("console.log('Hello world'");
 
       setState(() {
         _nodeReady = true;
