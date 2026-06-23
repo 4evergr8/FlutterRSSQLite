@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
-import 'package:rss/database.dart';
-import 'package:rss/service/download.dart';
-import 'package:rss/service/rss.dart';
-import 'package:rss/view/reader.dart';
-import 'package:rss/widget.dart';
+import 'package:rssqlite/database.dart';
+import 'package:rssqlite/service/download.dart';
+import 'package:rssqlite/service/rss.dart';
+import 'package:rssqlite/view/reader.dart';
+import 'package:rssqlite/widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _db = AppDatabase();
