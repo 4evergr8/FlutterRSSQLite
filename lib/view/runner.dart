@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:node_flutter/node_flutter.dart';
 
@@ -10,6 +11,7 @@ class ScriptRunnerScreen extends StatefulWidget {
 
 class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
   final TextEditingController _codeController = TextEditingController();
+
   String _result = "";
   bool _loading = false;
 
@@ -37,23 +39,26 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
     });
   }
 
-  void _runScript() {
+  void _run() {
     setState(() {
       _loading = true;
       _result = "";
     });
 
-    Nodejs.sendMessage("run", {
-      "code": _codeController.text,
-      "input": ""
-    } as String);
+    Nodejs.sendMessage(
+      "run",
+      jsonEncode({
+        "code": _codeController.text,
+        "input": ""
+      }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Script Runner"),
+        title: const Text("JS Runner"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -67,7 +72,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
                 expands: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: "输入 JS 代码（使用 ctx.result 返回）",
+                  hintText: "输入JS代码（必须 ctx.result = xxx）",
                 ),
               ),
             ),
@@ -77,7 +82,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : _runScript,
+                onPressed: _loading ? null : _run,
                 child: Text(_loading ? "运行中..." : "执行"),
               ),
             ),
@@ -94,10 +99,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: SingleChildScrollView(
-                  child: Text(
-                    _result,
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                  child: Text(_result),
                 ),
               ),
             ),
