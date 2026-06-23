@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:node_flutter/node_flutter.dart';
 
+const String _defaultMainJs = """
+const bridge = require('flutter-bridge');
+
+bridge.send('ok', 'started');
+
+bridge.on('run', (msg) => {
+  const fn = new Function('return (' + msg + ')');
+  const result = fn()();
+  bridge.send('ok', String(result));
+});
+""";
+
 const String _defaultScript = """
 () => {
   return "Hello from Node.js! " + new Date().toISOString();
@@ -16,21 +28,21 @@ class ScriptRunnerScreen extends StatefulWidget {
 }
 
 class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
+  final TextEditingController _mainJsController =
+  TextEditingController(text: _defaultMainJs);
   final TextEditingController _scriptController =
   TextEditingController(text: _defaultScript);
-
   final TextEditingController _resultController = TextEditingController();
+
+  bool _nodeReady = false;
 
   @override
   void initState() {
     super.initState();
-
     Nodejs.onMessageReceived.listen((event) {
       if (!mounted) return;
-
       final tag = event['channelName'];
       final msg = event['message']?.toString() ?? '';
-
       if (tag == 'ok') {
         _resultController.text = msg;
       } else if (tag == 'error') {
@@ -41,9 +53,14 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
 
   Future<void> _startNode() async {
     try {
-      await Nodejs.start();
-
-      _resultController.text = 'Node.js started';
+      final code = _mainJsController.text.trim();
+      if (code.isEmpty) {
+        _showError("main.js 不能为空");
+        return;
+      }
+      await Nodejs.startWithScript(code);
+      setState(() => _nodeReady = true);
+      _resultController.text = 'Node.js 已启动';
     } catch (e) {
       _showError("启动失败: $e");
     }
@@ -51,13 +68,12 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
 
   void _runScript() {
     try {
-      final script = _scriptController.text.trim();
 
+      final script = _scriptController.text.trim();
       if (script.isEmpty) {
         _showError("脚本不能为空");
         return;
       }
-
       _resultController.text = '运行中...';
       Nodejs.sendMessage('run', script);
     } catch (e) {
@@ -67,13 +83,11 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
 
   void _showError(String message) {
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 4),
         content: GestureDetector(
-          onTap: () =>
-              Clipboard.setData(ClipboardData(text: message)),
+          onTap: () => Clipboard.setData(ClipboardData(text: message)),
           child: Text(message),
         ),
       ),
@@ -82,6 +96,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
 
   @override
   void dispose() {
+    _mainJsController.dispose();
     _scriptController.dispose();
     _resultController.dispose();
     super.dispose();
@@ -95,14 +110,21 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
+            _label("main.js（启动脚本）"),
+            Expanded(
+              flex: 3,
+              child: _editor(_mainJsController, "main.js 内容"),
+            ),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _startNode,
-                child: const Text("启动 Node.js"),
+                child: Text(_nodeReady ? "重新启动" : "启动 Node.js"),
               ),
             ),
             const SizedBox(height: 12),
+            _label("执行脚本"),
             Expanded(
               flex: 2,
               child: _editor(_scriptController, "要执行的代码"),
@@ -116,13 +138,10 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
               ),
             ),
             const SizedBox(height: 12),
+            _label("结果"),
             Expanded(
               flex: 2,
-              child: _editor(
-                _resultController,
-                "结果显示在这里",
-                readOnly: true,
-              ),
+              child: _editor(_resultController, "结果显示在这里", readOnly: true),
             ),
           ],
         ),
@@ -130,11 +149,17 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
     );
   }
 
-  Widget _editor(
-      TextEditingController ctrl,
-      String hint, {
-        bool readOnly = false,
-      }) =>
+  Widget _label(String text) => Align(
+    alignment: Alignment.centerLeft,
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(text,
+          style: const TextStyle(fontSize: 12, color: Colors.grey)),
+    ),
+  );
+
+  Widget _editor(TextEditingController ctrl, String hint,
+      {bool readOnly = false}) =>
       TextField(
         controller: ctrl,
         maxLines: null,
