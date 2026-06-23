@@ -1,6 +1,7 @@
 {
   "name": "node-app",
   "version": "1.0.0",
+  "main": "main.js",
   "dependencies": {
     "feed": "^4.2.2",
     "cheerio": "^1.0.0"
