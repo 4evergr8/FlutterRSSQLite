@@ -92,12 +92,12 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
         _isLoadingData = false;
       });
     } catch (e) {
-      showErrorSnackBarGlobal('加载本地数据错误: $e');
+      showSnackBarGlobal("error", "$e");
     }
   }
 
   Future<void> _refreshAllFeeds() async {
-    final cancelLoading = await showLoadingDialogGlobal();
+    final close = showSnackBarGlobal("load", "请稍候...");
 
     try {
       final allFeeds = await _db.select(_db.feeds).get();
@@ -147,16 +147,15 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
             ),
           );
         } catch (singleError) {
-          showErrorSnackBarGlobal('更新订阅源 [${feed.title}] 失败，已跳过: $singleError');
+          showSnackBarGlobal("error", "更新订阅源 [${feed.title}] 失败，已跳过: $singleError");
           continue;
         }
       }
-
+      close();
       await _loadDatabaseData();
     } catch (e) {
-      showErrorSnackBarGlobal('刷新队列发生致命异常: $e');
-    } finally {
-      cancelLoading();
+      close();
+      showSnackBarGlobal("error", "$e");
     }
   }
 
