@@ -1,4 +1,10 @@
 const bridge = require('flutter-bridge');
+const cheerio = require('cheerio');
+const feed = require('feed');
+
+// 将模块挂载到全局，使动态执行的代码可以直接使用
+global.cheerio = cheerio;
+global.feed = feed;
 
 bridge.send('ok', 'started');
 
@@ -24,5 +30,3 @@ bridge.on('run', (msg) => {
     bridge.send('error', String(e));
   }
 });
-
-
