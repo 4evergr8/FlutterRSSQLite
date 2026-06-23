@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:rss/database.dart';
-import 'package:rss/service/download.dart';
-import 'package:rss/service/rss.dart';
-import 'package:rss/widget.dart';
+import 'package:rssqlite/database.dart';
+import 'package:rssqlite/service/download.dart';
+import 'package:rssqlite/service/rss.dart';
+import 'package:rssqlite/widget.dart';
 import 'package:xml/xml.dart' as xml;
 
 var _db = AppDatabase();
