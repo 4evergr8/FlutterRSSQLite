@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'theme/theme.dart';
 import 'theme/util.dart';
 import 'widget.dart';
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
 
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     MaterialTheme theme = MaterialTheme(textTheme);
 
     return MaterialApp(
-      navigatorKey: navigatorKey,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'RSSQlite',
       theme: brightness == Brightness.light ? theme.light() : theme.dark(),
       home: const HomeScreen(),
