@@ -9,9 +9,11 @@ import 'widget.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  await Nodejs.start();
+
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  await Nodejs.start();
+
 
 
   runApp(const MyApp());
