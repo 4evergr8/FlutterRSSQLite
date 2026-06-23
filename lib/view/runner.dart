@@ -46,7 +46,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
     Nodejs.sendMessage("run", {
       "code": _codeController.text,
       "input": ""
-    });
+    } as String);
   }
 
   @override
