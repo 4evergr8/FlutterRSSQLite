@@ -1,40 +1,28 @@
 const bridge = require('flutter-bridge');
 
-console.log("Node.js started");
+bridge.send('ok', 'started');
 
-bridge.on('run', async (message) => {
-
-  let payload;
-
+bridge.on('run', (msg) => {
   try {
-    payload = JSON.parse(message);
+    const fn = new Function('return (' + msg + ')');
+    const result = fn();
+
+    if (typeof result === 'function') {
+      const out = result();
+
+      if (out && typeof out.then === 'function') {
+        out
+          .then(r => bridge.send('ok', String(r)))
+          .catch(e => bridge.send('error', String(e)));
+      } else {
+        bridge.send('ok', String(out));
+      }
+    } else {
+      bridge.send('ok', String(result));
+    }
   } catch (e) {
-    bridge.send('error', 'JSON解析失败: ' + e.toString());
-    return;
-  }
-
-  const code = payload.code || "";
-  const input = payload.input || "";
-
-  const ctx = {
-    input,
-    fetch,
-    console,
-    result: null
-  };
-
-  try {
-    await new Function('ctx', `
-      return (async () => {
-        with (ctx) {
-          ${code}
-        }
-      })();
-    `)(ctx);
-
-    bridge.send('ok', ctx.result ?? "");
-
-  } catch (e) {
-    bridge.send('error', e.toString());
+    bridge.send('error', String(e));
   }
 });
+
+
