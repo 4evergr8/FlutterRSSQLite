@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rss/main.dart';
-import 'package:rss/view/add.dart';
-import 'package:rss/view/feed.dart';
-import 'package:rss/view/settings.dart';
+import 'package:rssqlite/main.dart';
+import 'package:rssqlite/view/add.dart';
+import 'package:rssqlite/view/feed.dart';
+import 'package:rssqlite/view/settings.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
