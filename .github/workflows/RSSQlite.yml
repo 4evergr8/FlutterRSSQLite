@@ -14,15 +14,15 @@ jobs:
         with:
           ref: main
 
-      - name: 设置 Node.js 环境
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: 安装 npm 依赖
-        run: |
-          cd android/app/src/main/assets/nodejs-project
-          npm install
+#      - name: 设置 Node.js 环境
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: 20
+#
+#      - name: 安装 npm 依赖
+#        run: |
+#          cd android/app/src/main/assets/nodejs-project
+#          npm install
 
       - name: 设置 Flutter 环境
         uses: subosito/flutter-action@v2
