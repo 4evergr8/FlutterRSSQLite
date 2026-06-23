@@ -36,12 +36,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      showErrorSnackBarGlobal('加载订阅列表失败: $e');
+      showSnackBarGlobal("error", "$e");
     }
   }
 
   Future<void> _exportOpml() async {
-    final cancelLoading = await showLoadingDialogGlobal();
+    final close = showSnackBarGlobal("load", "请稍候...");
     try {
       if (_allFeeds.isEmpty) {
         throw '没有可导出的订阅源';
@@ -86,16 +86,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final file = File(p.join(tempDir.path, 'feeds_export.opml'));
       await file.writeAsString(sb.toString(), encoding: utf8);
 
-      cancelLoading();
+      close();
+
       await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: '导出 OPML 订阅源'));
     } catch (e) {
-      cancelLoading();
-      showErrorSnackBarGlobal('导出 OPML 失败: $e');
+      close();
+      showSnackBarGlobal("error", "$e");
     }
   }
 
   Future<void> _exportDatabase() async {
-    final cancelLoading = await showLoadingDialogGlobal();
+    final close = showSnackBarGlobal("load", "请稍候...");
     try {
       final dbDir = await getApplicationDocumentsDirectory();
       final dbFile = File(p.join(dbDir.path, 'app_database.sqlite'));
@@ -108,11 +109,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final backupFile = File(p.join(tempDir.path, 'rss_backup.sqlite'));
       await dbFile.copy(backupFile.path);
 
-      cancelLoading();
+      close();
+
       await SharePlus.instance.share(ShareParams(files: [XFile(backupFile.path)], text: '备份数据库文件'));
     } catch (e) {
-      cancelLoading();
-      showErrorSnackBarGlobal('导出数据库失败: $e');
+      close();
+      showSnackBarGlobal("error", "$e");
     }
   }
 
@@ -196,16 +198,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
 
                     if (confirm == true && mounted) {
-                      final cancelLoading = await showLoadingDialogGlobal();
+                      final close = showSnackBarGlobal("load", "请稍候...");
                       try {
                         await (_db.delete(_db.articles)..where((tbl) => tbl.feedUrl.equals(feed.feedUrl))).go();
                         await (_db.delete(_db.feeds)..where((tbl) => tbl.feedUrl.equals(feed.feedUrl))).go();
                         Navigator.pop(context);
                         _loadFeeds();
+                        close();
                       } catch (e) {
-                        showErrorSnackBarGlobal('删除失败: $e');
-                      } finally {
-                        cancelLoading();
+                        close();
+                        showSnackBarGlobal("error", "$e");
                       }
                     }
                   },
@@ -214,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
                 TextButton(
                   onPressed: () async {
-                    final cancelLoading = await showLoadingDialogGlobal();
+                    final close = showSnackBarGlobal("load", "请稍候...");
                     try {
                       await (_db.update(_db.feeds)..where((tbl) => tbl.feedUrl.equals(feed.feedUrl))).write(
                         FeedsCompanion(
@@ -226,10 +228,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                       Navigator.pop(context);
                       _loadFeeds();
+                      close();
                     } catch (e) {
-                      showErrorSnackBarGlobal('更新失败: $e');
-                    } finally {
-                      cancelLoading();
+                      close();
+                      showSnackBarGlobal("error", "$e");
                     }
                   },
                   child: const Text('保存'),
