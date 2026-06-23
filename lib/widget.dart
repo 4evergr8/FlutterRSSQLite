@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:rssqlite/main.dart';
 import 'package:rssqlite/view/add.dart';
 import 'package:rssqlite/view/feed.dart';
+import 'package:rssqlite/view/runner.dart';
 import 'package:rssqlite/view/settings.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -23,6 +24,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const RssFeedScreen(feedType: 0), // 未读
     const RssFeedScreen(feedType: 1), // 所有
     const RssFeedScreen(feedType: 2), // 星标
+    const ScriptRunnerScreen(), // 新增
   ];
 
   @override
@@ -87,6 +89,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ),
           BottomNavigationBarItem(icon: Icon(Icons.rss_feed_outlined), activeIcon: Icon(Icons.rss_feed), label: '所有'),
           BottomNavigationBarItem(icon: Icon(Icons.star_outline), activeIcon: Icon(Icons.star), label: '星标'),
+          BottomNavigationBarItem(icon: Icon(Icons.code_outlined), activeIcon: Icon(Icons.code), label: '脚本'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
