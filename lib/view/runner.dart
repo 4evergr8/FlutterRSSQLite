@@ -6,20 +6,12 @@ import 'package:node_flutter/node_flutter.dart';
 const String _defaultMainJs = """
 const bridge = require('flutter-bridge');
 
+bridge.send('ok', 'started');
+
 bridge.on('run', (msg) => {
-  try {
-    const fn = new Function('return (' + msg + ')')();
-    const result = fn();
-    if (result && typeof result.then === 'function') {
-      result
-        .then(r => bridge.send('ok', String(r ?? '')))
-        .catch(e => bridge.send('error', String(e?.message ?? e)));
-    } else {
-      bridge.send('ok', String(result ?? ''));
-    }
-  } catch(e) {
-    bridge.send('error', String(e?.message ?? e));
-  }
+  const fn = new Function('return (' + msg + ')');
+  const result = fn()();
+  bridge.send('ok', String(result));
 });
 """;
 
