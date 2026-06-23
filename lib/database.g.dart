@@ -7,7 +7,9 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
+
   $SettingsTable(this.attachedDatabase, [this._alias]);
+
   static const VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
@@ -27,51 +29,41 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+
   @override
   List<GeneratedColumn> get $columns => [key, value];
+
   @override
   String get aliasedName => _alias ?? actualTableName;
+
   @override
   String get actualTableName => $name;
   static const String $name = 'settings';
+
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Setting> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<Setting> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('key')) {
-      context.handle(
-        _keyMeta,
-        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
-      );
+      context.handle(_keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('value')) {
-      context.handle(
-        _valueMeta,
-        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
-      );
+      context.handle(_valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {key};
+
   @override
   Setting map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Setting(
-      key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}key'],
-      )!,
-      value: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}value'],
-      )!,
+      key: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}value'])!,
     );
   }
 
@@ -84,7 +76,9 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
 class Setting extends DataClass implements Insertable<Setting> {
   final String key;
   final String value;
+
   const Setting({required this.key, required this.value});
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -97,27 +91,19 @@ class Setting extends DataClass implements Insertable<Setting> {
     return SettingsCompanion(key: Value(key), value: Value(value));
   }
 
-  factory Setting.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Setting.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Setting(
-      key: serializer.fromJson<String>(json['key']),
-      value: serializer.fromJson<String>(json['value']),
-    );
+    return Setting(key: serializer.fromJson<String>(json['key']), value: serializer.fromJson<String>(json['value']));
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'key': serializer.toJson<String>(key),
-      'value': serializer.toJson<String>(value),
-    };
+    return <String, dynamic>{'key': serializer.toJson<String>(key), 'value': serializer.toJson<String>(value)};
   }
 
-  Setting copyWith({String? key, String? value}) =>
-      Setting(key: key ?? this.key, value: value ?? this.value);
+  Setting copyWith({String? key, String? value}) => Setting(key: key ?? this.key, value: value ?? this.value);
+
   Setting copyWithCompanion(SettingsCompanion data) {
     return Setting(
       key: data.key.present ? data.key.value : this.key,
@@ -136,31 +122,27 @@ class Setting extends DataClass implements Insertable<Setting> {
 
   @override
   int get hashCode => Object.hash(key, value);
+
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Setting && other.key == this.key && other.value == this.value);
+      identical(this, other) || (other is Setting && other.key == this.key && other.value == this.value);
 }
 
 class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<String> key;
   final Value<String> value;
   final Value<int> rowid;
+
   const SettingsCompanion({
     this.key = const Value.absent(),
     this.value = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  SettingsCompanion.insert({
-    required String key,
-    this.value = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : key = Value(key);
-  static Insertable<Setting> custom({
-    Expression<String>? key,
-    Expression<String>? value,
-    Expression<int>? rowid,
-  }) {
+
+  SettingsCompanion.insert({required String key, this.value = const Value.absent(), this.rowid = const Value.absent()})
+    : key = Value(key);
+
+  static Insertable<Setting> custom({Expression<String>? key, Expression<String>? value, Expression<int>? rowid}) {
     return RawValuesInsertable({
       if (key != null) 'key': key,
       if (value != null) 'value': value,
@@ -168,16 +150,8 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     });
   }
 
-  SettingsCompanion copyWith({
-    Value<String>? key,
-    Value<String>? value,
-    Value<int>? rowid,
-  }) {
-    return SettingsCompanion(
-      key: key ?? this.key,
-      value: value ?? this.value,
-      rowid: rowid ?? this.rowid,
-    );
+  SettingsCompanion copyWith({Value<String>? key, Value<String>? value, Value<int>? rowid}) {
+    return SettingsCompanion(key: key ?? this.key, value: value ?? this.value, rowid: rowid ?? this.rowid);
   }
 
   @override
@@ -210,10 +184,10 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
+
   $FeedsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _feedUrlMeta = const VerificationMeta(
-    'feedUrl',
-  );
+
+  static const VerificationMeta _feedUrlMeta = const VerificationMeta('feedUrl');
   @override
   late final GeneratedColumn<String> feedUrl = GeneratedColumn<String>(
     'feed_url',
@@ -222,9 +196,7 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _siteUrlMeta = const VerificationMeta(
-    'siteUrl',
-  );
+  static const VerificationMeta _siteUrlMeta = const VerificationMeta('siteUrl');
   @override
   late final GeneratedColumn<String> siteUrl = GeneratedColumn<String>(
     'site_url',
@@ -244,9 +216,7 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _categoryMeta = const VerificationMeta(
-    'category',
-  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta('category');
   @override
   late final GeneratedColumn<String> category = GeneratedColumn<String>(
     'category',
@@ -256,9 +226,7 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _iconUrlMeta = const VerificationMeta(
-    'iconUrl',
-  );
+  static const VerificationMeta _iconUrlMeta = const VerificationMeta('iconUrl');
   @override
   late final GeneratedColumn<String> iconUrl = GeneratedColumn<String>(
     'icon_url',
@@ -268,9 +236,7 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _lastUpdatedMeta = const VerificationMeta(
-    'lastUpdated',
-  );
+  static const VerificationMeta _lastUpdatedMeta = const VerificationMeta('lastUpdated');
   @override
   late final GeneratedColumn<String> lastUpdated = GeneratedColumn<String>(
     'last_updated',
@@ -280,9 +246,7 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
     requiredDuringInsert: false,
     defaultValue: const Constant('0'),
   );
-  static const VerificationMeta _displayModeMeta = const VerificationMeta(
-    'displayMode',
-  );
+  static const VerificationMeta _displayModeMeta = const VerificationMeta('displayMode');
   @override
   late final GeneratedColumn<String> displayMode = GeneratedColumn<String>(
     'display_mode',
@@ -292,115 +256,61 @@ class $FeedsTable extends Feeds with TableInfo<$FeedsTable, Feed> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+
   @override
-  List<GeneratedColumn> get $columns => [
-    feedUrl,
-    siteUrl,
-    title,
-    category,
-    iconUrl,
-    lastUpdated,
-    displayMode,
-  ];
+  List<GeneratedColumn> get $columns => [feedUrl, siteUrl, title, category, iconUrl, lastUpdated, displayMode];
+
   @override
   String get aliasedName => _alias ?? actualTableName;
+
   @override
   String get actualTableName => $name;
   static const String $name = 'feeds';
+
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Feed> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<Feed> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('feed_url')) {
-      context.handle(
-        _feedUrlMeta,
-        feedUrl.isAcceptableOrUnknown(data['feed_url']!, _feedUrlMeta),
-      );
+      context.handle(_feedUrlMeta, feedUrl.isAcceptableOrUnknown(data['feed_url']!, _feedUrlMeta));
     } else if (isInserting) {
       context.missing(_feedUrlMeta);
     }
     if (data.containsKey('site_url')) {
-      context.handle(
-        _siteUrlMeta,
-        siteUrl.isAcceptableOrUnknown(data['site_url']!, _siteUrlMeta),
-      );
+      context.handle(_siteUrlMeta, siteUrl.isAcceptableOrUnknown(data['site_url']!, _siteUrlMeta));
     }
     if (data.containsKey('title')) {
-      context.handle(
-        _titleMeta,
-        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
-      );
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     }
     if (data.containsKey('category')) {
-      context.handle(
-        _categoryMeta,
-        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
-      );
+      context.handle(_categoryMeta, category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     }
     if (data.containsKey('icon_url')) {
-      context.handle(
-        _iconUrlMeta,
-        iconUrl.isAcceptableOrUnknown(data['icon_url']!, _iconUrlMeta),
-      );
+      context.handle(_iconUrlMeta, iconUrl.isAcceptableOrUnknown(data['icon_url']!, _iconUrlMeta));
     }
     if (data.containsKey('last_updated')) {
-      context.handle(
-        _lastUpdatedMeta,
-        lastUpdated.isAcceptableOrUnknown(
-          data['last_updated']!,
-          _lastUpdatedMeta,
-        ),
-      );
+      context.handle(_lastUpdatedMeta, lastUpdated.isAcceptableOrUnknown(data['last_updated']!, _lastUpdatedMeta));
     }
     if (data.containsKey('display_mode')) {
-      context.handle(
-        _displayModeMeta,
-        displayMode.isAcceptableOrUnknown(
-          data['display_mode']!,
-          _displayModeMeta,
-        ),
-      );
+      context.handle(_displayModeMeta, displayMode.isAcceptableOrUnknown(data['display_mode']!, _displayModeMeta));
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {feedUrl};
+
   @override
   Feed map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Feed(
-      feedUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}feed_url'],
-      )!,
-      siteUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}site_url'],
-      )!,
-      title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}title'],
-      )!,
-      category: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}category'],
-      )!,
-      iconUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}icon_url'],
-      )!,
-      lastUpdated: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}last_updated'],
-      )!,
-      displayMode: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}display_mode'],
-      )!,
+      feedUrl: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}feed_url'])!,
+      siteUrl: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}site_url'])!,
+      title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      category: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      iconUrl: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}icon_url'])!,
+      lastUpdated: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}last_updated'])!,
+      displayMode: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}display_mode'])!,
     );
   }
 
@@ -418,6 +328,7 @@ class Feed extends DataClass implements Insertable<Feed> {
   final String iconUrl;
   final String lastUpdated;
   final String displayMode;
+
   const Feed({
     required this.feedUrl,
     required this.siteUrl,
@@ -427,6 +338,7 @@ class Feed extends DataClass implements Insertable<Feed> {
     required this.lastUpdated,
     required this.displayMode,
   });
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -452,10 +364,7 @@ class Feed extends DataClass implements Insertable<Feed> {
     );
   }
 
-  factory Feed.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Feed.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Feed(
       feedUrl: serializer.fromJson<String>(json['feedUrl']),
@@ -467,6 +376,7 @@ class Feed extends DataClass implements Insertable<Feed> {
       displayMode: serializer.fromJson<String>(json['displayMode']),
     );
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -498,6 +408,7 @@ class Feed extends DataClass implements Insertable<Feed> {
     lastUpdated: lastUpdated ?? this.lastUpdated,
     displayMode: displayMode ?? this.displayMode,
   );
+
   Feed copyWithCompanion(FeedsCompanion data) {
     return Feed(
       feedUrl: data.feedUrl.present ? data.feedUrl.value : this.feedUrl,
@@ -505,12 +416,8 @@ class Feed extends DataClass implements Insertable<Feed> {
       title: data.title.present ? data.title.value : this.title,
       category: data.category.present ? data.category.value : this.category,
       iconUrl: data.iconUrl.present ? data.iconUrl.value : this.iconUrl,
-      lastUpdated: data.lastUpdated.present
-          ? data.lastUpdated.value
-          : this.lastUpdated,
-      displayMode: data.displayMode.present
-          ? data.displayMode.value
-          : this.displayMode,
+      lastUpdated: data.lastUpdated.present ? data.lastUpdated.value : this.lastUpdated,
+      displayMode: data.displayMode.present ? data.displayMode.value : this.displayMode,
     );
   }
 
@@ -529,15 +436,8 @@ class Feed extends DataClass implements Insertable<Feed> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    feedUrl,
-    siteUrl,
-    title,
-    category,
-    iconUrl,
-    lastUpdated,
-    displayMode,
-  );
+  int get hashCode => Object.hash(feedUrl, siteUrl, title, category, iconUrl, lastUpdated, displayMode);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -560,6 +460,7 @@ class FeedsCompanion extends UpdateCompanion<Feed> {
   final Value<String> lastUpdated;
   final Value<String> displayMode;
   final Value<int> rowid;
+
   const FeedsCompanion({
     this.feedUrl = const Value.absent(),
     this.siteUrl = const Value.absent(),
@@ -570,6 +471,7 @@ class FeedsCompanion extends UpdateCompanion<Feed> {
     this.displayMode = const Value.absent(),
     this.rowid = const Value.absent(),
   });
+
   FeedsCompanion.insert({
     required String feedUrl,
     this.siteUrl = const Value.absent(),
@@ -580,6 +482,7 @@ class FeedsCompanion extends UpdateCompanion<Feed> {
     this.displayMode = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : feedUrl = Value(feedUrl);
+
   static Insertable<Feed> custom({
     Expression<String>? feedUrl,
     Expression<String>? siteUrl,
@@ -674,7 +577,9 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
+
   $ArticlesTable(this.attachedDatabase, [this._alias]);
+
   static const VerificationMeta _guidMeta = const VerificationMeta('guid');
   @override
   late final GeneratedColumn<String> guid = GeneratedColumn<String>(
@@ -694,9 +599,7 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _feedUrlMeta = const VerificationMeta(
-    'feedUrl',
-  );
+  static const VerificationMeta _feedUrlMeta = const VerificationMeta('feedUrl');
   @override
   late final GeneratedColumn<String> feedUrl = GeneratedColumn<String>(
     'feed_url',
@@ -716,9 +619,7 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta(
-    'description',
-  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta('description');
   @override
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
@@ -728,9 +629,7 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _contentMeta = const VerificationMeta(
-    'content',
-  );
+  static const VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
     'content',
@@ -740,9 +639,7 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _enclosureMeta = const VerificationMeta(
-    'enclosure',
-  );
+  static const VerificationMeta _enclosureMeta = const VerificationMeta('enclosure');
   @override
   late final GeneratedColumn<String> enclosure = GeneratedColumn<String>(
     'enclosure',
@@ -782,6 +679,7 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+
   @override
   List<GeneratedColumn> get $columns => [
     guid,
@@ -795,132 +693,70 @@ class $ArticlesTable extends Articles with TableInfo<$ArticlesTable, Article> {
     date,
     status,
   ];
+
   @override
   String get aliasedName => _alias ?? actualTableName;
+
   @override
   String get actualTableName => $name;
   static const String $name = 'articles';
+
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Article> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<Article> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('guid')) {
-      context.handle(
-        _guidMeta,
-        guid.isAcceptableOrUnknown(data['guid']!, _guidMeta),
-      );
+      context.handle(_guidMeta, guid.isAcceptableOrUnknown(data['guid']!, _guidMeta));
     } else if (isInserting) {
       context.missing(_guidMeta);
     }
     if (data.containsKey('title')) {
-      context.handle(
-        _titleMeta,
-        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
-      );
+      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     }
     if (data.containsKey('feed_url')) {
-      context.handle(
-        _feedUrlMeta,
-        feedUrl.isAcceptableOrUnknown(data['feed_url']!, _feedUrlMeta),
-      );
+      context.handle(_feedUrlMeta, feedUrl.isAcceptableOrUnknown(data['feed_url']!, _feedUrlMeta));
     }
     if (data.containsKey('link')) {
-      context.handle(
-        _linkMeta,
-        link.isAcceptableOrUnknown(data['link']!, _linkMeta),
-      );
+      context.handle(_linkMeta, link.isAcceptableOrUnknown(data['link']!, _linkMeta));
     }
     if (data.containsKey('description')) {
-      context.handle(
-        _descriptionMeta,
-        description.isAcceptableOrUnknown(
-          data['description']!,
-          _descriptionMeta,
-        ),
-      );
+      context.handle(_descriptionMeta, description.isAcceptableOrUnknown(data['description']!, _descriptionMeta));
     }
     if (data.containsKey('content')) {
-      context.handle(
-        _contentMeta,
-        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
-      );
+      context.handle(_contentMeta, content.isAcceptableOrUnknown(data['content']!, _contentMeta));
     }
     if (data.containsKey('enclosure')) {
-      context.handle(
-        _enclosureMeta,
-        enclosure.isAcceptableOrUnknown(data['enclosure']!, _enclosureMeta),
-      );
+      context.handle(_enclosureMeta, enclosure.isAcceptableOrUnknown(data['enclosure']!, _enclosureMeta));
     }
     if (data.containsKey('author')) {
-      context.handle(
-        _authorMeta,
-        author.isAcceptableOrUnknown(data['author']!, _authorMeta),
-      );
+      context.handle(_authorMeta, author.isAcceptableOrUnknown(data['author']!, _authorMeta));
     }
     if (data.containsKey('date')) {
-      context.handle(
-        _dateMeta,
-        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
-      );
+      context.handle(_dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
     }
     if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
+      context.handle(_statusMeta, status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {guid};
+
   @override
   Article map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Article(
-      guid: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}guid'],
-      )!,
-      title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}title'],
-      )!,
-      feedUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}feed_url'],
-      )!,
-      link: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}link'],
-      )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      )!,
-      content: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}content'],
-      )!,
-      enclosure: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}enclosure'],
-      )!,
-      author: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}author'],
-      )!,
-      date: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}date'],
-      )!,
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
+      guid: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}guid'])!,
+      title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      feedUrl: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}feed_url'])!,
+      link: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}link'])!,
+      description: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      content: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      enclosure: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}enclosure'])!,
+      author: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}author'])!,
+      date: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}date'])!,
+      status: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}status'])!,
     );
   }
 
@@ -941,6 +777,7 @@ class Article extends DataClass implements Insertable<Article> {
   final String author;
   final String date;
   final String status;
+
   const Article({
     required this.guid,
     required this.title,
@@ -953,6 +790,7 @@ class Article extends DataClass implements Insertable<Article> {
     required this.date,
     required this.status,
   });
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -984,10 +822,7 @@ class Article extends DataClass implements Insertable<Article> {
     );
   }
 
-  factory Article.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Article.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Article(
       guid: serializer.fromJson<String>(json['guid']),
@@ -1002,6 +837,7 @@ class Article extends DataClass implements Insertable<Article> {
       status: serializer.fromJson<String>(json['status']),
     );
   }
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1042,15 +878,14 @@ class Article extends DataClass implements Insertable<Article> {
     date: date ?? this.date,
     status: status ?? this.status,
   );
+
   Article copyWithCompanion(ArticlesCompanion data) {
     return Article(
       guid: data.guid.present ? data.guid.value : this.guid,
       title: data.title.present ? data.title.value : this.title,
       feedUrl: data.feedUrl.present ? data.feedUrl.value : this.feedUrl,
       link: data.link.present ? data.link.value : this.link,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
+      description: data.description.present ? data.description.value : this.description,
       content: data.content.present ? data.content.value : this.content,
       enclosure: data.enclosure.present ? data.enclosure.value : this.enclosure,
       author: data.author.present ? data.author.value : this.author,
@@ -1077,18 +912,8 @@ class Article extends DataClass implements Insertable<Article> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    guid,
-    title,
-    feedUrl,
-    link,
-    description,
-    content,
-    enclosure,
-    author,
-    date,
-    status,
-  );
+  int get hashCode => Object.hash(guid, title, feedUrl, link, description, content, enclosure, author, date, status);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1117,6 +942,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
   final Value<String> date;
   final Value<String> status;
   final Value<int> rowid;
+
   const ArticlesCompanion({
     this.guid = const Value.absent(),
     this.title = const Value.absent(),
@@ -1130,6 +956,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     this.status = const Value.absent(),
     this.rowid = const Value.absent(),
   });
+
   ArticlesCompanion.insert({
     required String guid,
     this.title = const Value.absent(),
@@ -1143,6 +970,7 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
     this.status = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : guid = Value(guid);
+
   static Insertable<Article> custom({
     Expression<String>? guid,
     Expression<String>? title,
@@ -1259,36 +1087,25 @@ class ArticlesCompanion extends UpdateCompanion<Article> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
+
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $SettingsTable settings = $SettingsTable(this);
   late final $FeedsTable feeds = $FeedsTable(this);
   late final $ArticlesTable articles = $ArticlesTable(this);
+
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    settings,
-    feeds,
-    articles,
-  ];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [settings, feeds, articles];
 }
 
 typedef $$SettingsTableCreateCompanionBuilder =
-    SettingsCompanion Function({
-      required String key,
-      Value<String> value,
-      Value<int> rowid,
-    });
+    SettingsCompanion Function({required String key, Value<String> value, Value<int> rowid});
 typedef $$SettingsTableUpdateCompanionBuilder =
-    SettingsCompanion Function({
-      Value<String> key,
-      Value<String> value,
-      Value<int> rowid,
-    });
+    SettingsCompanion Function({Value<String> key, Value<String> value, Value<int> rowid});
 
-class $$SettingsTableFilterComposer
-    extends Composer<_$AppDatabase, $SettingsTable> {
+class $$SettingsTableFilterComposer extends Composer<_$AppDatabase, $SettingsTable> {
   $$SettingsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1296,19 +1113,14 @@ class $$SettingsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
 
-  ColumnFilters<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get key => $composableBuilder(column: $table.key, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => ColumnFilters(column));
 }
 
-class $$SettingsTableOrderingComposer
-    extends Composer<_$AppDatabase, $SettingsTable> {
+class $$SettingsTableOrderingComposer extends Composer<_$AppDatabase, $SettingsTable> {
   $$SettingsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1316,19 +1128,15 @@ class $$SettingsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
 
-  ColumnOrderings<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => ColumnOrderings(column));
 }
 
-class $$SettingsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SettingsTable> {
+class $$SettingsTableAnnotationComposer extends Composer<_$AppDatabase, $SettingsTable> {
   $$SettingsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1336,11 +1144,10 @@ class $$SettingsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get key =>
-      $composableBuilder(column: $table.key, builder: (column) => column);
 
-  GeneratedColumn<String> get value =>
-      $composableBuilder(column: $table.value, builder: (column) => column);
+  GeneratedColumn<String> get key => $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value => $composableBuilder(column: $table.value, builder: (column) => column);
 }
 
 class $$SettingsTableTableManager
@@ -1363,12 +1170,9 @@ class $$SettingsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$SettingsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SettingsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$SettingsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> key = const Value.absent(),
@@ -1380,14 +1184,8 @@ class $$SettingsTableTableManager
                 required String key,
                 Value<String> value = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => SettingsCompanion.insert(
-                key: key,
-                value: value,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
+              }) => SettingsCompanion.insert(key: key, value: value, rowid: rowid),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -1438,44 +1236,30 @@ class $$FeedsTableFilterComposer extends Composer<_$AppDatabase, $FeedsTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get feedUrl => $composableBuilder(
-    column: $table.feedUrl,
-    builder: (column) => ColumnFilters(column),
-  );
 
-  ColumnFilters<String> get siteUrl => $composableBuilder(
-    column: $table.siteUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get feedUrl =>
+      $composableBuilder(column: $table.feedUrl, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get siteUrl =>
+      $composableBuilder(column: $table.siteUrl, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get iconUrl => $composableBuilder(
-    column: $table.iconUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get lastUpdated => $composableBuilder(
-    column: $table.lastUpdated,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get iconUrl =>
+      $composableBuilder(column: $table.iconUrl, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get displayMode => $composableBuilder(
-    column: $table.displayMode,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get lastUpdated =>
+      $composableBuilder(column: $table.lastUpdated, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get displayMode =>
+      $composableBuilder(column: $table.displayMode, builder: (column) => ColumnFilters(column));
 }
 
-class $$FeedsTableOrderingComposer
-    extends Composer<_$AppDatabase, $FeedsTable> {
+class $$FeedsTableOrderingComposer extends Composer<_$AppDatabase, $FeedsTable> {
   $$FeedsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1483,44 +1267,30 @@ class $$FeedsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get feedUrl => $composableBuilder(
-    column: $table.feedUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
 
-  ColumnOrderings<String> get siteUrl => $composableBuilder(
-    column: $table.siteUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get feedUrl =>
+      $composableBuilder(column: $table.feedUrl, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get siteUrl =>
+      $composableBuilder(column: $table.siteUrl, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get iconUrl => $composableBuilder(
-    column: $table.iconUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get lastUpdated => $composableBuilder(
-    column: $table.lastUpdated,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get iconUrl =>
+      $composableBuilder(column: $table.iconUrl, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get displayMode => $composableBuilder(
-    column: $table.displayMode,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get lastUpdated =>
+      $composableBuilder(column: $table.lastUpdated, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get displayMode =>
+      $composableBuilder(column: $table.displayMode, builder: (column) => ColumnOrderings(column));
 }
 
-class $$FeedsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FeedsTable> {
+class $$FeedsTableAnnotationComposer extends Composer<_$AppDatabase, $FeedsTable> {
   $$FeedsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1528,30 +1298,22 @@ class $$FeedsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get feedUrl =>
-      $composableBuilder(column: $table.feedUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get siteUrl =>
-      $composableBuilder(column: $table.siteUrl, builder: (column) => column);
+  GeneratedColumn<String> get feedUrl => $composableBuilder(column: $table.feedUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => column);
+  GeneratedColumn<String> get siteUrl => $composableBuilder(column: $table.siteUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get category =>
-      $composableBuilder(column: $table.category, builder: (column) => column);
+  GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<String> get iconUrl =>
-      $composableBuilder(column: $table.iconUrl, builder: (column) => column);
+  GeneratedColumn<String> get category => $composableBuilder(column: $table.category, builder: (column) => column);
 
-  GeneratedColumn<String> get lastUpdated => $composableBuilder(
-    column: $table.lastUpdated,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get iconUrl => $composableBuilder(column: $table.iconUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get displayMode => $composableBuilder(
-    column: $table.displayMode,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get lastUpdated =>
+      $composableBuilder(column: $table.lastUpdated, builder: (column) => column);
+
+  GeneratedColumn<String> get displayMode =>
+      $composableBuilder(column: $table.displayMode, builder: (column) => column);
 }
 
 class $$FeedsTableTableManager
@@ -1574,12 +1336,9 @@ class $$FeedsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$FeedsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$FeedsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$FeedsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => $$FeedsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$FeedsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$FeedsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> feedUrl = const Value.absent(),
@@ -1620,9 +1379,7 @@ class $$FeedsTableTableManager
                 displayMode: displayMode,
                 rowid: rowid,
               ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -1671,8 +1428,7 @@ typedef $$ArticlesTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$ArticlesTableFilterComposer
-    extends Composer<_$AppDatabase, $ArticlesTable> {
+class $$ArticlesTableFilterComposer extends Composer<_$AppDatabase, $ArticlesTable> {
   $$ArticlesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1680,59 +1436,39 @@ class $$ArticlesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get guid => $composableBuilder(
-    column: $table.guid,
-    builder: (column) => ColumnFilters(column),
-  );
 
-  ColumnFilters<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get guid =>
+      $composableBuilder(column: $table.guid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get feedUrl => $composableBuilder(
-    column: $table.feedUrl,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get link => $composableBuilder(
-    column: $table.link,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get feedUrl =>
+      $composableBuilder(column: $table.feedUrl, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get link =>
+      $composableBuilder(column: $table.link, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get content => $composableBuilder(
-    column: $table.content,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get description =>
+      $composableBuilder(column: $table.description, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get enclosure => $composableBuilder(
-    column: $table.enclosure,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get author => $composableBuilder(
-    column: $table.author,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get enclosure =>
+      $composableBuilder(column: $table.enclosure, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnFilters(column));
 }
 
-class $$ArticlesTableOrderingComposer
-    extends Composer<_$AppDatabase, $ArticlesTable> {
+class $$ArticlesTableOrderingComposer extends Composer<_$AppDatabase, $ArticlesTable> {
   $$ArticlesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1740,59 +1476,39 @@ class $$ArticlesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get guid => $composableBuilder(
-    column: $table.guid,
-    builder: (column) => ColumnOrderings(column),
-  );
 
-  ColumnOrderings<String> get title => $composableBuilder(
-    column: $table.title,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get guid =>
+      $composableBuilder(column: $table.guid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get feedUrl => $composableBuilder(
-    column: $table.feedUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get link => $composableBuilder(
-    column: $table.link,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get feedUrl =>
+      $composableBuilder(column: $table.feedUrl, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get link =>
+      $composableBuilder(column: $table.link, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get content => $composableBuilder(
-    column: $table.content,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get description =>
+      $composableBuilder(column: $table.description, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get enclosure => $composableBuilder(
-    column: $table.enclosure,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get author => $composableBuilder(
-    column: $table.author,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get enclosure =>
+      $composableBuilder(column: $table.enclosure, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnOrderings(column));
 }
 
-class $$ArticlesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ArticlesTable> {
+class $$ArticlesTableAnnotationComposer extends Composer<_$AppDatabase, $ArticlesTable> {
   $$ArticlesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1800,37 +1516,27 @@ class $$ArticlesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get guid =>
-      $composableBuilder(column: $table.guid, builder: (column) => column);
 
-  GeneratedColumn<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => column);
+  GeneratedColumn<String> get guid => $composableBuilder(column: $table.guid, builder: (column) => column);
 
-  GeneratedColumn<String> get feedUrl =>
-      $composableBuilder(column: $table.feedUrl, builder: (column) => column);
+  GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<String> get link =>
-      $composableBuilder(column: $table.link, builder: (column) => column);
+  GeneratedColumn<String> get feedUrl => $composableBuilder(column: $table.feedUrl, builder: (column) => column);
 
-  GeneratedColumn<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get link => $composableBuilder(column: $table.link, builder: (column) => column);
 
-  GeneratedColumn<String> get content =>
-      $composableBuilder(column: $table.content, builder: (column) => column);
+  GeneratedColumn<String> get description =>
+      $composableBuilder(column: $table.description, builder: (column) => column);
 
-  GeneratedColumn<String> get enclosure =>
-      $composableBuilder(column: $table.enclosure, builder: (column) => column);
+  GeneratedColumn<String> get content => $composableBuilder(column: $table.content, builder: (column) => column);
 
-  GeneratedColumn<String> get author =>
-      $composableBuilder(column: $table.author, builder: (column) => column);
+  GeneratedColumn<String> get enclosure => $composableBuilder(column: $table.enclosure, builder: (column) => column);
 
-  GeneratedColumn<String> get date =>
-      $composableBuilder(column: $table.date, builder: (column) => column);
+  GeneratedColumn<String> get author => $composableBuilder(column: $table.author, builder: (column) => column);
 
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
+  GeneratedColumn<String> get date => $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get status => $composableBuilder(column: $table.status, builder: (column) => column);
 }
 
 class $$ArticlesTableTableManager
@@ -1853,12 +1559,9 @@ class $$ArticlesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$ArticlesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ArticlesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ArticlesTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => $$ArticlesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$ArticlesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$ArticlesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> guid = const Value.absent(),
@@ -1911,9 +1614,7 @@ class $$ArticlesTableTableManager
                 status: status,
                 rowid: rowid,
               ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -1936,11 +1637,12 @@ typedef $$ArticlesTableProcessedTableManager =
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
+
   $AppDatabaseManager(this._db);
-  $$SettingsTableTableManager get settings =>
-      $$SettingsTableTableManager(_db, _db.settings);
-  $$FeedsTableTableManager get feeds =>
-      $$FeedsTableTableManager(_db, _db.feeds);
-  $$ArticlesTableTableManager get articles =>
-      $$ArticlesTableTableManager(_db, _db.articles);
+
+  $$SettingsTableTableManager get settings => $$SettingsTableTableManager(_db, _db.settings);
+
+  $$FeedsTableTableManager get feeds => $$FeedsTableTableManager(_db, _db.feeds);
+
+  $$ArticlesTableTableManager get articles => $$ArticlesTableTableManager(_db, _db.articles);
 }

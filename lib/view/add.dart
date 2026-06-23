@@ -47,7 +47,6 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
   Future<void> _fetchAndParseFeed() async {
     final inputUrl = _urlController.text.trim();
     if (inputUrl.isEmpty) {
-
       showSnackBarGlobal("error", "请输入链接后再解析");
       return;
     }

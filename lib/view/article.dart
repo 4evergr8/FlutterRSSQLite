@@ -146,7 +146,6 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         showSnackBarGlobal("error", "无法打开网页链接: ${article.link}");
-
       }
       _loadArticles();
     } else {

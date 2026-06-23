@@ -27,7 +27,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _scrollController.addListener(_scrollListener); // 监听滚动事件
-
   }
 
   @override
@@ -52,8 +51,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
       }
     });
   }
-
-
 
   // 切换已读/未读状态
   Future<void> _toggleRead() async {

@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'theme/theme.dart';
 import 'theme/util.dart';
 import 'widget.dart';
+
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-
-
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-
-
   runApp(const MyApp());
-
 }
 
 class MyApp extends StatelessWidget {

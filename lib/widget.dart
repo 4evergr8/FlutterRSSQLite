@@ -46,26 +46,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedIndex == 0 ? '未读订阅' : _selectedIndex == 1 ? '所有订阅' : '星标订阅'),
+        title: Text(
+          _selectedIndex == 0
+              ? '未读订阅'
+              : _selectedIndex == 1
+              ? '所有订阅'
+              : '星标订阅',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SettingsScreen()));
             },
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AddFeedScreen()),
-              );
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddFeedScreen()));
             },
           ),
         ],
@@ -85,16 +85,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
             activeIcon: Icon(Icons.mark_as_unread),
             label: '未读',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.rss_feed_outlined),
-            activeIcon: Icon(Icons.rss_feed),
-            label: '所有',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star_outline),
-            activeIcon: Icon(Icons.star),
-            label: '星标',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.rss_feed_outlined), activeIcon: Icon(Icons.rss_feed), label: '所有'),
+          BottomNavigationBarItem(icon: Icon(Icons.star_outline), activeIcon: Icon(Icons.star), label: '星标'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
@@ -106,7 +98,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
     );
   }
 }
-
 
 VoidCallback showSnackBarGlobal(String type, String text) {
   final messenger = scaffoldMessengerKey.currentState;
