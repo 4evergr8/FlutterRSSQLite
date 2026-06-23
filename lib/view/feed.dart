@@ -139,6 +139,7 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
             ),
           );
         } catch (singleError) {
+          close();
           showSnackBarGlobal("error", "更新订阅源 [${feed.title}] 失败，已终止刷新: $singleError");
           rethrow;
         }
