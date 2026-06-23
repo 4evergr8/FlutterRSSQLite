@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:node_flutter/node_flutter.dart';
 import 'theme/theme.dart';
 import 'theme/util.dart';
 import 'widget.dart';
@@ -8,6 +9,7 @@ import 'widget.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  await Nodejs.start();
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
