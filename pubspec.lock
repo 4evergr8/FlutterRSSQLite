@@ -683,10 +683,9 @@ packages:
   node_flutter:
     dependency: "direct main"
     description:
-      name: node_flutter
-      sha256: "17a169358ce6b537776639d1880be9fe09681869e9635e512f89fdbf22f6bb89"
-      url: "https://pub.dev"
-    source: hosted
+      path: "plugins/node_flutter"
+      relative: true
+    source: path
     version: "0.0.4"
   objective_c:
     dependency: transitive
