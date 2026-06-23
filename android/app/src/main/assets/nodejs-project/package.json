@@ -1,9 +1,17 @@
 {
-  "name": "node-app",
+  "name": "nodejs-project",
   "version": "1.0.0",
+  "description": "",
   "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
   "dependencies": {
-    "feed": "^4.2.2",
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.2.0",
+    "feed": "^5.2.1"
   }
 }
