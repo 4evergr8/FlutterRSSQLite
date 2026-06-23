@@ -8,16 +8,51 @@ const bridge = require('flutter-bridge');
 bridge.send('ok', 'started');
 
 bridge.on('run', (msg) => {
-  const fn = new Function('return (' + msg + ')');
-  const result = fn()();
-  bridge.send('ok', String(result));
+  try {
+    const fn = new Function('return (' + msg + ')');
+    const result = fn();
+
+    if (typeof result === 'function') {
+      const out = result();
+
+      if (out && typeof out.then === 'function') {
+        out
+          .then(r => bridge.send('ok', String(r)))
+          .catch(e => bridge.send('error', String(e)));
+      } else {
+        bridge.send('ok', String(out));
+      }
+    } else {
+      bridge.send('ok', String(result));
+    }
+  } catch (e) {
+    bridge.send('error', String(e));
+  }
 });
+
+
+
 """;
 
 const String _defaultScript = """
+
 () => {
-  return "Hello from Node.js! " + new Date().toISOString();
+  const modules = ['cheerio', 'feed', 'https', 'fs', 'path'];
+
+  const result = {};
+
+  for (const m of modules) {
+    try {
+      require(m);
+      result[m] = true;
+    } catch (e) {
+      result[m] = false;
+    }
+  }
+
+  return JSON.stringify(result);
 }
+
 """;
 
 class ScriptRunnerScreen extends StatefulWidget {
