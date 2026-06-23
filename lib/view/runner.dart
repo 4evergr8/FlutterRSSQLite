@@ -77,10 +77,7 @@ class _ScriptRunnerScreenState extends State<ScriptRunnerScreen> {
 
   void _runScript() {
     try {
-      if (!_nodeReady) {
-        _showError("请先启动 Node.js");
-        return;
-      }
+
       final script = _scriptController.text.trim();
       if (script.isEmpty) {
         _showError("脚本不能为空");
