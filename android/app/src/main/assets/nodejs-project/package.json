@@ -1,0 +1,8 @@
+{
+  "name": "node-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "feed": "^4.2.2",
+    "cheerio": "^1.0.0"
+  }
+}
