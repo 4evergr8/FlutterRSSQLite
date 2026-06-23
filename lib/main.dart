@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:node_flutter/node_flutter.dart';
 import 'theme/theme.dart';
 import 'theme/util.dart';
 import 'widget.dart';
@@ -12,7 +11,6 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  await Nodejs.start();
 
 
 
