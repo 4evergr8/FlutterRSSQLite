@@ -31,14 +31,6 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
   void initState() {
     super.initState();
     _loadDatabaseData();
-
-    // 识别冷启动：只有完全杀死后第一次进入才会执行
-    if (_isAppColdLaunched) {
-      _isAppColdLaunched = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _refreshAllFeeds();
-      });
-    }
   }
 
   Future<void> _loadDatabaseData() async {
@@ -147,8 +139,8 @@ class _RssFeedScreenState extends State<RssFeedScreen> {
             ),
           );
         } catch (singleError) {
-          showSnackBarGlobal("error", "更新订阅源 [${feed.title}] 失败，已跳过: $singleError");
-          continue;
+          showSnackBarGlobal("error", "更新订阅源 [${feed.title}] 失败，已终止刷新: $singleError");
+          rethrow;
         }
       }
       close();
