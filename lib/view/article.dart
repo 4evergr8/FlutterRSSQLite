@@ -55,12 +55,12 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
       });
     } catch (e) {
       _isLoading = false;
-      showErrorSnackBarGlobal('加载文章失败: $e');
+      showSnackBarGlobal("error", "$e");
     }
   }
 
   Future<void> _refreshCurrentFeed() async {
-    final cancelLoading = await showLoadingDialogGlobal();
+    final close = showSnackBarGlobal("load", "请稍候...");
 
     try {
       final xmlText = await downloadXmlFromServer(widget.feed.feedUrl);
@@ -110,12 +110,11 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
           iconUrl: drift.Value(iconUrl),
         ),
       );
-
+      close();
       await _loadArticles();
     } catch (e) {
-      showErrorSnackBarGlobal('刷新订阅源失败: $e');
-    } finally {
-      cancelLoading();
+      close();
+      showSnackBarGlobal("error", "$e");
     }
   }
 
@@ -146,7 +145,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        showErrorSnackBarGlobal('无法打开网页链接: ${article.link}');
+        showSnackBarGlobal("error", "无法打开网页链接: ${article.link}");
+
       }
       _loadArticles();
     } else {
@@ -251,7 +251,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                                             height: 1.35,
                                             color: isUnread
                                                 ? colorScheme.onSurfaceVariant
-                                                : colorScheme.onSurface.withValues(alpha: 0.45)
+                                                : colorScheme.onSurface.withValues(alpha: 0.45),
                                           ),
                                         ),
                                       ],
@@ -272,7 +272,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                                           placeholder: (context, url) => Container(
                                             width: imageWidth,
                                             height: imageHeight,
-                                            color: colorScheme.surfaceContainerHighest.withValues(alpha:0.3),
+                                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                             alignment: Alignment.center,
                                             child: const SizedBox(
                                               width: 16,
@@ -283,7 +283,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                                           errorWidget: (context, url, error) => Container(
                                             width: imageWidth,
                                             height: imageHeight,
-                                            color: colorScheme.surfaceContainerHighest.withValues(alpha:0.3),
+                                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                             alignment: Alignment.center,
                                             child: Icon(Icons.broken_image, size: 20, color: colorScheme.outline),
                                           ),
@@ -304,7 +304,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: colorScheme.outline.withValues(alpha:isUnread ? 1.0 : 0.6),
+                                        color: colorScheme.outline.withValues(alpha: isUnread ? 1.0 : 0.6),
                                       ),
                                     ),
                                   ),
@@ -320,7 +320,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                                         dateText,
                                         style: TextStyle(
                                           fontSize: 11,
-                                          color: colorScheme.outline.withValues(alpha:isUnread ? 1.0 : 0.6),
+                                          color: colorScheme.outline.withValues(alpha: isUnread ? 1.0 : 0.6),
                                         ),
                                       ),
                                     ],
