@@ -47,11 +47,12 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
   Future<void> _fetchAndParseFeed() async {
     final inputUrl = _urlController.text.trim();
     if (inputUrl.isEmpty) {
-      showErrorSnackBarGlobal('请输入链接后再解析');
+
+      showSnackBarGlobal("error", "请输入链接后再解析");
       return;
     }
 
-    final cancelLoading = await showLoadingDialogGlobal();
+    final close = showSnackBarGlobal("load", "请稍候...");
 
     try {
       final xmlText = await downloadXmlFromServer(inputUrl);
@@ -68,10 +69,10 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
         _editFeedUrlController.text = parsedFeedUrl.isNotEmpty ? parsedFeedUrl : inputUrl;
         _hasLoaded = true;
       });
-    } catch (error) {
-      showErrorSnackBarGlobal(error.toString());
-    } finally {
-      cancelLoading();
+      close();
+    } catch (e) {
+      close();
+      showSnackBarGlobal("error", "$e");
     }
   }
 
@@ -83,7 +84,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
         return;
       }
 
-      final cancelLoading = await showLoadingDialogGlobal();
+      final close = showSnackBarGlobal("load", "请稍候...");
       int importCount = 0;
 
       try {
@@ -112,17 +113,14 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
 
         importCount = feedsToInsert.length;
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('成功导入 $importCount 个订阅源！')));
-          Navigator.of(context).pop();
-        }
-      } catch (error) {
-        showErrorSnackBarGlobal('解析或导入失败: $error');
-      } finally {
-        cancelLoading();
+        close();
+        showSnackBarGlobal("success", "成功导入 $importCount 个订阅源！");
+      } catch (e) {
+        close();
+        showSnackBarGlobal("error", "$e");
       }
     } catch (e) {
-      showErrorSnackBarGlobal('选择文件失败: $e');
+      showSnackBarGlobal("error", "$e");
     }
   }
 
@@ -182,7 +180,7 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
 
       if (confirm != true) return;
 
-      final cancelLoading = await showLoadingDialogGlobal();
+      final close = showSnackBarGlobal("load", "请稍候...");
 
       try {
         final selectedFile = File(result.files.single.path!);
@@ -199,18 +197,18 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('数据库覆盖导入成功！')));
           Navigator.of(context).pop();
         }
-      } catch (error) {
-        showErrorSnackBarGlobal('导入数据库失败: $error');
-      } finally {
-        cancelLoading();
+        close();
+      } catch (e) {
+        close();
+        showSnackBarGlobal("error", "$e");
       }
     } catch (e) {
-      showErrorSnackBarGlobal('选择文件失败: $e');
+      showSnackBarGlobal("error", "$e");
     }
   }
 
   Future<void> _saveToDatabase() async {
-    final cancelLoading = await showLoadingDialogGlobal();
+    final close = showSnackBarGlobal("load", "请稍候...");
 
     try {
       await _db
@@ -227,15 +225,11 @@ class _AddFeedScreenState extends State<AddFeedScreen> {
               displayMode: drift.Value(_selectedDisplayMode),
             ),
           );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('订阅保存成功！')));
-        Navigator.of(context).pop();
-      }
-    } catch (error) {
-      showErrorSnackBarGlobal('保存失败: $error');
-    } finally {
-      cancelLoading();
+      close();
+      showSnackBarGlobal("success", "订阅保存成功！");
+    } catch (e) {
+      close();
+      showSnackBarGlobal("error", "$e");
     }
   }
 
