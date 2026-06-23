@@ -7,14 +7,22 @@ jobs:
   build:
     name: Build Flutter APK
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: 拉取 main 分支代码
         uses: actions/checkout@v6
         with:
           ref: main
+
+      - name: 设置 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装 npm 依赖
+        run: |
+          cd android/app/src/main/assets/nodejs-project
+          npm install
 
       - name: 设置 Flutter 环境
         uses: subosito/flutter-action@v2
@@ -27,10 +35,8 @@ jobs:
       - name: 构建 APK (按 ABI 分割)
         run: flutter build apk --release --split-per-abi --no-tree-shake-icons
 
-
       - name: 上传 arm64-v8a APK
         uses: actions/upload-artifact@v7
         with:
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           archive: false
-   
