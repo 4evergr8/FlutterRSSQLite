@@ -42,9 +42,9 @@ class _NodeRunnerScreenState extends State<NodeRunnerScreen> {
       final param = _paramController.text;
 
       final result = await Process.run(
-        'node',
+        '/data/user/0/app.flutter.rssqlite/app_flutter/node/node',
         ['index.js', param],
-        workingDirectory: nodeDir,
+        workingDirectory: '/data/user/0/app.flutter.rssqlite/app_flutter/node/',
       );
 
       final stdout = result.stdout.toString();
