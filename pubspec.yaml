@@ -15,8 +15,6 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   dio: ^5.9.2
   drift_flutter: ^0.3.0
-  node_flutter:
-    path: plugins/node_flutter
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.5
   url_launcher: ^6.3.2
